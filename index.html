@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#687b55">
+    <meta
+      name="description"
+      content="Um espaço acolhedor para cuidar da mente no seu tempo, com terapia, hobbies, movimento e alimentação consciente."
+    >
+    <title>Mentaltech — um espaço para você</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+    <header class="site-header">
+      <a class="brand" href="#inicio" aria-label="Mentaltech — início">
+        <span class="brand-mark" aria-hidden="true">m<span>✳</span></span>
+        <span>Mentaltech</span>
+      </a>
+      <nav class="site-nav" aria-label="Navegação principal">
+        <a href="#pilares">Seu bem-estar</a>
+        <a href="#sobre">Sobre nós</a>
+        <a class="nav-emergency" href="#emergencia">Preciso de ajuda</a>
+        <button class="button button-outline" type="button" data-action="login">Entrar</button>
+      </nav>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-label="Abrir menu">
+        <span></span><span></span>
+      </button>
+    </header>
+
+    <main id="main-content">
+      <section class="hero section-shell" id="inicio">
+        <div class="hero-copy">
+          <span class="eyebrow"><span class="eyebrow-dot"></span> UM DIA DE CADA VEZ</span>
+          <h1>Um espaço gentil para <em>cuidar de você.</em></h1>
+          <p>Seu bem-estar não precisa esperar. Encontre apoio, inspiração e pequenos passos possíveis para o dia de hoje.</p>
+          <div class="hero-actions">
+            <button class="button button-primary" type="button" data-action="start">Encontre seu caminho <span aria-hidden="true">↗</span></button>
+            <a class="button button-text" href="#pilares">Explore o espaço <span aria-hidden="true">↓</span></a>
+          </div>
+          <div class="hero-note">
+            <span class="note-avatars" aria-hidden="true"><i>m</i><i>m</i><i>m</i></span>
+            <span>Um lugar de apoio, no seu tempo.</span>
+          </div>
+        </div>
+        <div class="hero-art" aria-label="Ilustração de um ambiente tranquilo para o autocuidado">
+          <div class="art-sun"></div>
+          <div class="art-shadow"></div>
+          <div class="art-window"><div class="window-sky"></div><div class="window-hill"></div><div class="window-plant">✳</div></div>
+          <div class="art-table"></div>
+          <div class="art-book"><span></span><span></span></div>
+          <div class="art-vase"><span>✿</span></div>
+          <div class="art-note"><span>respira</span><strong>seu caminho,<br>no seu tempo.</strong><i>✳</i></div>
+          <div class="art-caption">Cuidar de si também<br>é seguir em frente.</div>
+        </div>
+      </section>
+
+      <section class="welcome-band">
+        <div class="section-shell welcome-inner">
+          <span class="welcome-symbol" aria-hidden="true">✳</span>
+          <p>Onde a terapia vai <strong>além do consultório</strong>, a qualquer hora, em qualquer lugar.</p>
+          <span class="welcome-caption">Um ponto de partida para você.</span>
+        </div>
+      </section>
+
+      <section class="pillars section-shell" id="pilares">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">UM OLHAR POR INTEIRO</span>
+            <h2>Cada cuidado <em>conta.</em></h2>
+          </div>
+          <p>Pequenas práticas que, juntas, ajudam a criar uma rotina mais sua.</p>
+        </div>
+        <div class="pillar-grid">
+          <button class="pillar-card pillar-therapy" type="button" data-pillar="terapia">
+            <span class="pillar-icon" aria-hidden="true">♡</span><span class="pillar-number">01 / ACOLHIMENTO</span>
+            <strong>Terapia</strong><span>Um espaço seguro para ser ouvido, no seu ritmo.</span><span class="card-arrow" aria-hidden="true">↗</span>
+          </button>
+          <button class="pillar-card pillar-hobbies" type="button" data-pillar="hobbies">
+            <span class="pillar-icon" aria-hidden="true">✳</span><span class="pillar-number">02 / EXPRESSÃO</span>
+            <strong>Hobbies</strong><span>Redescubra aquilo que faz seus olhos brilharem.</span><span class="card-arrow" aria-hidden="true">↗</span>
+          </button>
+          <button class="pillar-card pillar-movement" type="button" data-pillar="movimento">
+            <span class="pillar-icon" aria-hidden="true">↗</span><span class="pillar-number">03 / MOVIMENTO</span>
+            <strong>Saúde física</strong><span>Movimente-se com gentileza, sem cobrança.</span><span class="card-arrow" aria-hidden="true">↗</span>
+          </button>
+          <button class="pillar-card pillar-food" type="button" data-pillar="alimentacao">
+            <span class="pillar-icon" aria-hidden="true">❋</span><span class="pillar-number">04 / NUTRIÇÃO</span>
+            <strong>Alimentação</strong><span>Mais presença e carinho à mesa, um passo por vez.</span><span class="card-arrow" aria-hidden="true">↗</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="quote-section section-shell" id="sobre">
+        <div class="quote-art" aria-hidden="true"><div class="quote-orbit"></div><span>✳</span><i>um respiro</i><strong>no meio<br>do caminho</strong></div>
+        <div class="quote-copy">
+          <span class="eyebrow">UM ECOSSISTEMA DE ACOLHIMENTO</span>
+          <h2>A sua jornada é <em>única.</em></h2>
+          <p>Na Mentaltech, acreditamos que o cuidado com a mente se constrói no dia a dia. Reunimos apoio psicológico, hábitos saudáveis e momentos de pausa para ajudar você a encontrar o que faz sentido para sua vida.</p>
+          <p>Não é sobre fazer tudo. É sobre descobrir, com gentileza, o próximo pequeno passo.</p>
+          <button class="button button-outline" type="button" data-action="start">Conheça a plataforma <span aria-hidden="true">↗</span></button>
+        </div>
+      </section>
+
+      <section class="emergency section-shell" id="emergencia">
+        <div class="emergency-copy">
+          <span class="eyebrow">SE PRECISAR, ESTAMOS AQUI</span>
+          <h2>Você não precisa <em>passar por isso só.</em></h2>
+          <p>Se estiver em sofrimento ou em risco imediato, procure alguém de confiança e acione um serviço de apoio. Estes canais são gratuitos ou de utilidade pública no Brasil.</p>
+          <a class="emergency-primary" href="tel:188"><span class="emergency-heart" aria-hidden="true">♡</span><span><strong>CVV · Apoio emocional</strong><small>Converse gratuitamente, 24 horas por dia</small></span><b>188 <span aria-hidden="true">↗</span></b></a>
+          <div class="emergency-secondary">
+            <a href="tel:180"><strong>180</strong><span>Central de Atendimento à Mulher</span></a>
+            <a href="tel:192"><strong>192</strong><span>SAMU · emergência médica</span></a>
+            <a href="tel:190"><strong>190</strong><span>Polícia Militar</span></a>
+          </div>
+          <p class="emergency-disclaimer">Em uma emergência imediata, ligue para o serviço adequado à sua situação. A Mentaltech é um protótipo e não substitui atendimento profissional.</p>
+        </div>
+        <div class="emergency-art" aria-hidden="true"><div class="emergency-art-sun"></div><div class="emergency-art-plant">✳</div><div class="emergency-art-text">Este momento<br>não define<br>seu caminho.<span>♡</span></div><div class="emergency-art-base"></div></div>
+      </section>
+
+      <section class="closing-note">
+        <span>Que bom que você chegou até aqui.</span><i aria-hidden="true">✳</i>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="section-shell footer-inner">
+        <a class="brand brand-footer" href="#inicio"><span class="brand-mark" aria-hidden="true">m<span>✳</span></span><span>Mentaltech</span></a>
+        <p>Um dia de cada vez, no seu tempo.</p>
+        <div class="footer-links"><a href="#sobre">Sobre</a><a href="#emergencia">Rede de apoio</a><a href="https://www.cvv.org.br/" target="_blank" rel="noreferrer">CVV ↗</a></div>
+        <small>Protótipo acadêmico · conteúdo demonstrativo</small>
+      </div>
+    </footer>
+
+    <dialog class="app-dialog" id="app-dialog" aria-labelledby="dialog-title">
+      <div class="dialog-shell">
+        <button class="dialog-close" type="button" data-action="close-dialog" aria-label="Fechar">×</button>
+        <div id="dialog-content"></div>
+      </div>
+    </dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

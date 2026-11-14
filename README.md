@@ -12,7 +12,7 @@ O protótipo inclui:
 
 - página inicial responsiva, com navegação entre seções;
 - acesso demonstrativo por e-mail ou CPF e senha, ou exploração como visitante;
-- área pessoal demonstrativa com check-in de humor, guardado no navegador;
+- área pessoal demonstrativa com check-in de humor guardado no navegador e sugestões diárias para os quatro pilares, adaptadas ao sentimento selecionado;
 - quatro pilares interativos e listagem de profissionais fictícios;
 - seção de apoio rápido com links `tel:` para CVV (188), Central de Atendimento à Mulher (180), SAMU (192) e Polícia Militar (190);
 - layouts acessíveis para computador e celular.
@@ -25,7 +25,7 @@ O protótipo inclui:
 
 ### Área pessoal
 
-![Área pessoal demonstrativa da Mentaltech](screenshots/02-area-pessoal.png)
+![Área pessoal com recomendações diárias adaptadas ao sentimento selecionado](screenshots/02-area-pessoal.png)
 
 ### Apoio e emergência
 

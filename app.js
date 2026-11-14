@@ -33,6 +33,39 @@ const professionals = [
   { name: "Dra. Luiza Santos", focus: "Bem-estar emocional", availability: "Online · agenda demonstrativa", initials: "LS" },
 ];
 
+const dailyRecommendations = {
+  tranquilo: {
+    title: "Aproveite o que está fazendo bem",
+    description: "Você sinalizou que está em um momento mais tranquilo. Escolha uma ideia leve, sem transformar autocuidado em obrigação.",
+    items: [
+      { pillar: "Terapia", text: "Anote algo que gostaria de compartilhar em uma próxima conversa." },
+      { pillar: "Hobbies", text: "Reserve alguns minutos para um interesse que lhe dá prazer." },
+      { pillar: "Movimento", text: "Escolha uma caminhada ou alongamento que seja confortável." },
+      { pillar: "Alimentação", text: "Faça uma refeição com calma, prestando atenção no que gosta." },
+    ],
+  },
+  "mais-ou-menos": {
+    title: "Pequenos passos também contam",
+    description: "Como hoje parece estar mais ou menos, prefira uma ideia simples e possível. Você pode escolher só uma.",
+    items: [
+      { pillar: "Terapia", text: "Escreva em poucas palavras o que está ocupando sua mente." },
+      { pillar: "Hobbies", text: "Ouça uma música ou faça algo de que gosta por cinco minutos." },
+      { pillar: "Movimento", text: "Faça uma pausa breve ou alongue-se se isso parecer confortável." },
+      { pillar: "Alimentação", text: "Tente fazer sua próxima refeição sem pressa, do jeito que puder." },
+    ],
+  },
+  dificil: {
+    title: "Menos cobrança, mais acolhimento",
+    description: "Você indicou que hoje está difícil. Não precisa dar conta de tudo; escolha uma ideia de conforto e procure apoio se quiser.",
+    items: [
+      { pillar: "Terapia", text: "Se quiser, converse com alguém de confiança ou com uma pessoa profissional." },
+      { pillar: "Hobbies", text: "Coloque uma música ou escolha algo familiar e reconfortante." },
+      { pillar: "Movimento", text: "Se fizer sentido, sente-se em um lugar confortável e faça uma pausa." },
+      { pillar: "Alimentação", text: "Se puder, tome um pouco de água ou escolha algo simples para comer." },
+    ],
+  },
+};
+
 const dialog = document.querySelector("#app-dialog");
 const dialogContent = document.querySelector("#dialog-content");
 const toast = document.querySelector("#toast");
@@ -92,6 +125,26 @@ function escapeHTML(value) {
   })[character]);
 }
 
+function dailyRecommendationsView() {
+  const recommendation = dailyRecommendations[state.mood];
+  const suggestionCards = recommendation
+    ? recommendation.items.map(({ pillar, text }) => `
+      <li class="recommendation-card"><strong>${pillar}</strong><span>${text}</span></li>
+    `).join("")
+    : "";
+  const title = recommendation?.title || "Sua sugestão para hoje";
+  const description = recommendation?.description || "Faça seu check-in para receber ideias leves de cuidado, de acordo com como você está se sentindo.";
+
+  return `
+    <section class="daily-recommendations" aria-labelledby="recommendation-title" aria-live="polite">
+      <span class="recommendation-eyebrow">SUGESTÕES DE HOJE</span>
+      <h3 class="recommendation-title" id="recommendation-title">${title}</h3>
+      <p class="recommendation-description">${description}</p>
+      ${suggestionCards ? `<ul class="recommendation-list">${suggestionCards}</ul>` : ""}
+    </section>
+  `;
+}
+
 function loginView() {
   openDialog(`
     <span class="dialog-eyebrow">SEU ESPAÇO, NO SEU TEMPO</span>
@@ -130,9 +183,10 @@ function dashboardView() {
       <span class="pillar-icon" aria-hidden="true">✳</span>
     </div>
     <div class="dashboard-mood"><strong>Como você está se sentindo agora?</strong><div class="mood-choices">${moodButtons}</div></div>
+    <a class="dashboard-emergency" href="#emergencia" data-action="close-and-emergency"><span>Se precisar de apoio emocional agora</span><strong>CVV · 188 ↗</strong></a>
+    ${dailyRecommendationsView()}
     <h3 class="dashboard-section-title">Seu cuidado, em quatro pilares</h3>
     <div class="dashboard-pillars">${pillarCards}</div>
-    <a class="dashboard-emergency" href="#emergencia" data-action="close-and-emergency"><span>Se precisar de apoio emocional agora</span><strong>CVV · 188 ↗</strong></a>
     <button class="form-link dashboard-exit" type="button" data-action="logout">Sair deste espaço</button>
   `);
 }

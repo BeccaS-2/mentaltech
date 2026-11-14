@@ -62,27 +62,8 @@ h1 em, h2 em { color: var(--olive); font-weight: 500; }
 .note-avatars i { display: grid; width: 24px; height: 24px; margin-left: -4px; place-items: center; border: 2px solid var(--paper); border-radius: 50%; color: var(--olive); background: var(--sage); font-size: 11px; font-style: normal; }
 .note-avatars i:nth-child(2) { color: #83697e; background: #e8dce6; }
 .note-avatars i:nth-child(3) { color: #776145; background: #efe1ca; }
-.hero-art { position: relative; min-height: 410px; overflow: hidden; border-radius: 49% 49% 20px 20px; background: linear-gradient(150deg, #eff0e5 0 42%, #dce4d1 42% 100%); box-shadow: 0 18px 50px #52614715; }
-.art-sun { position: absolute; top: 55px; right: 68px; width: 126px; height: 126px; border-radius: 50%; background: #f0dfc2; }
-.art-shadow { position: absolute; bottom: 56px; left: -30px; width: 420px; height: 160px; border-radius: 50%; background: #bbccb0; transform: rotate(-13deg); }
-.art-window { position: absolute; top: 82px; left: 75px; width: 185px; height: 205px; overflow: hidden; border: 8px solid #f7f3e8; border-radius: 90px 90px 4px 4px; background: #d3ddc9; box-shadow: 8px 8px 0 rgb(76 95 63 / 15%); }
-.window-sky { position: absolute; inset: 0 0 45%; background: linear-gradient(160deg, #dce6d7, #f8edda); }
-.window-hill { position: absolute; right: -14px; bottom: 12px; left: -16px; height: 108px; border-radius: 55% 52% 0 0; background: #9eac89; transform: rotate(-13deg); }
-.window-hill::after { position: absolute; top: 24px; left: 60px; width: 130px; height: 75px; border-radius: 50%; background: #c3ccad; content: ""; }
-.window-plant { position: absolute; right: 17px; bottom: 25px; color: #697d58; font-size: 36px; }
-.art-table { position: absolute; right: 0; bottom: 83px; left: 0; height: 18px; background: #927957; box-shadow: 0 12px 14px #4f584333; }
-.art-table::after { position: absolute; top: 17px; left: 72%; width: 16px; height: 97px; background: #927957; content: ""; }
-.art-book { position: absolute; bottom: 101px; left: 134px; display: flex; width: 120px; height: 62px; align-items: flex-start; transform: rotate(-9deg); }
-.art-book span { width: 50%; height: 58px; border: 1px solid #d5ccb8; border-bottom: 4px solid #e8decc; border-radius: 4px 2px 2px 2px; background: #fffdf6; }
-.art-book span + span { border-left: 0; transform: rotate(4deg); transform-origin: bottom left; }
-.art-vase { position: absolute; right: 50px; bottom: 91px; display: flex; width: 48px; height: 75px; align-items: flex-start; justify-content: center; padding-top: 15px; border-radius: 12px 12px 20px 20px; color: #73835f; background: #f3ead7; font-size: 35px; }
-.art-vase::before { position: absolute; top: -78px; width: 1px; height: 88px; background: #6f8260; content: ""; transform: rotate(-12deg); }
-.art-vase span { z-index: 1; }
-.art-note { position: absolute; top: 74px; right: 22px; display: flex; width: 126px; height: 142px; flex-direction: column; align-items: flex-start; justify-content: center; padding: 15px; border-radius: 5px 5px 19px 5px; color: #5e6f4f; background: #ece3ec; box-shadow: 0 14px 26px #6156761f; transform: rotate(8deg); }
-.art-note > span { font-family: var(--serif); font-size: 12px; font-style: italic; }
-.art-note strong { margin-top: 6px; font-family: var(--serif); font-size: 15px; font-weight: 500; line-height: 1.35; }
-.art-note i { position: absolute; top: -12px; right: -9px; color: #a582a1; font-size: 24px; font-style: normal; }
-.art-caption { position: absolute; right: 35px; bottom: 27px; color: var(--olive-dark); font-family: var(--serif); font-size: 12px; font-style: italic; line-height: 1.5; text-align: right; }
+.hero-art { width: min(100%, 448px); justify-self: center; }
+.hero-art img { display: block; width: 100%; height: auto; }
 .welcome-band { position: relative; background: var(--lavender); }
 .welcome-inner { position: relative; display: flex; min-height: 190px; align-items: center; gap: 24px; }
 .welcome-inner::after { position: absolute; right: 0; bottom: 0; width: 180px; height: 100%; background-image: radial-gradient(#b99cb5 1px, transparent 1px); background-position: 0 0; background-size: 12px 12px; content: ""; opacity: .25; mask-image: linear-gradient(100deg, transparent, #000); }
@@ -221,9 +202,7 @@ h1 em, h2 em { color: var(--olive); font-weight: 500; }
   .hero { min-height: 0; grid-template-columns: 1fr; gap: 32px; padding-block: 55px 58px; }
   .hero-copy { padding: 0; }
   .hero h1 { max-width: 540px; }
-  .hero-art { width: min(100%, 500px); min-height: 350px; justify-self: center; }
-  .art-window { left: 10%; }
-  .art-note { right: 6%; }
+  .hero-art { width: min(100%, 448px); }
   .welcome-inner { min-height: 160px; gap: 17px; }
   .welcome-caption { display: none; }
   .welcome-symbol { font-size: 34px; }
@@ -249,14 +228,6 @@ h1 em, h2 em { color: var(--olive); font-weight: 500; }
   .hero-actions .button-primary { padding-inline: 16px; font-size: 11px; }
   .hero-actions .button-text { font-size: 11px; }
   .hero-note { margin-top: 28px; }
-  .hero-art { min-height: 292px; }
-  .art-window { top: 54px; width: 145px; height: 173px; }
-  .art-note { top: 51px; width: 105px; height: 121px; }
-  .art-note strong { font-size: 13px; }
-  .art-vase { right: 23px; }
-  .art-table { bottom: 70px; }
-  .art-book { bottom: 86px; left: 23%; transform: scale(.8) rotate(-9deg); transform-origin: bottom left; }
-  .art-caption { right: 20px; bottom: 18px; font-size: 10px; }
   .welcome-inner { min-height: 130px; }
   .welcome-inner p { font-size: 18px; }
   .section-heading { align-items: flex-start; flex-direction: column; gap: 12px; }

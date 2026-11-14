@@ -180,7 +180,6 @@ function dashboardView() {
   openDialog(`
     <div class="dashboard-top">
       <div><span class="dialog-eyebrow">${escapeHTML(today.toUpperCase())} · SEU ESPAÇO</span><h2 class="dashboard-name" id="dialog-title">Olá, ${escapeHTML(firstName)}.</h2><span class="dashboard-date">Que bom que você está aqui.</span></div>
-      <span class="pillar-icon" aria-hidden="true">✳</span>
     </div>
     <div class="dashboard-mood"><strong>Como você está se sentindo agora?</strong><div class="mood-choices">${moodButtons}</div></div>
     <a class="dashboard-emergency" href="#emergencia" data-action="close-and-emergency"><span>Se precisar de apoio emocional agora</span><strong>CVV · 188 ↗</strong></a>

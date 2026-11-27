@@ -45,16 +45,11 @@
     <main id="main-content">
       <section class="hero section-shell" id="inicio">
         <div class="hero-copy">
-          <span class="eyebrow"><span class="eyebrow-dot"></span> UM DIA DE CADA VEZ</span>
           <h1>Um espaço gentil para <em>cuidar de você.</em></h1>
           <p>Seu bem-estar não precisa esperar. Encontre apoio, inspiração e pequenos passos possíveis para o dia de hoje.</p>
           <div class="hero-actions">
-            <button class="button button-primary" type="button" data-action="start">Encontre seu caminho <span aria-hidden="true">↗</span></button>
+            <button class="button button-primary" type="button" data-action="explore-pillars">Explore os pilares <span aria-hidden="true">↗</span></button>
             <a class="button button-text" href="#pilares">Explore o espaço <span aria-hidden="true">↓</span></a>
-          </div>
-          <div class="hero-note">
-            <span class="note-avatars" aria-hidden="true"><i>m</i><i>m</i><i>m</i></span>
-            <span>Um lugar de apoio, no seu tempo.</span>
           </div>
         </div>
         <div class="hero-art">
@@ -64,9 +59,18 @@
 
       <section class="welcome-band">
         <div class="section-shell welcome-inner">
-          <span class="welcome-symbol" aria-hidden="true">✳</span>
-          <p>Onde a terapia vai <strong>além do consultório</strong>, a qualquer hora, em qualquer lugar.</p>
-          <span class="welcome-caption">Um ponto de partida para você.</span>
+          <div class="welcome-message">
+            <svg class="welcome-symbol" viewBox="0 0 100 100" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="welcomeStarGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#8b76b8" />
+                  <stop offset="100%" stop-color="#d8b8d6" />
+                </linearGradient>
+              </defs>
+              <path fill="url(#welcomeStarGradient)" d="M50 0 C50 27.6 72.4 50 100 50 C72.4 50 50 72.4 50 100 C50 72.4 27.6 50 0 50 C27.6 50 50 27.6 50 0 Z" />
+            </svg>
+            <p>Onde a terapia vai <strong>além do consultório</strong>, a qualquer hora, em qualquer lugar.</p>
+          </div>
         </div>
       </section>
 
@@ -76,30 +80,25 @@
             <span class="eyebrow">UM OLHAR POR INTEIRO</span>
             <h2>Cada cuidado <em>conta.</em></h2>
           </div>
-          <p>Pequenas práticas que, juntas, ajudam a criar uma rotina mais sua.</p>
         </div>
         <div class="pillar-grid">
           <button class="pillar-card pillar-therapy" type="button" data-pillar="terapia">
-            <span class="pillar-icon" aria-hidden="true">♡</span><span class="pillar-number">01 / ACOLHIMENTO</span>
-            <strong>Terapia</strong><span>Um espaço seguro para ser ouvido, no seu ritmo.</span><span class="card-arrow" aria-hidden="true">↗</span>
+            <strong>Terapia</strong><span>Um espaço seguro para ser ouvido, no seu ritmo.</span><span class="card-arrow" aria-hidden="true"><svg class="card-star" viewBox="0 0 100 100"><path fill="currentColor" d="M50 0 C50 27.6 72.4 50 100 50 C72.4 50 50 72.4 50 100 C50 72.4 27.6 50 0 50 C27.6 50 50 27.6 50 0 Z" /></svg></span>
           </button>
           <button class="pillar-card pillar-hobbies" type="button" data-pillar="hobbies">
-            <span class="pillar-icon" aria-hidden="true">✳</span><span class="pillar-number">02 / EXPRESSÃO</span>
-            <strong>Hobbies</strong><span>Redescubra aquilo que faz seus olhos brilharem.</span><span class="card-arrow" aria-hidden="true">↗</span>
+            <strong>Hobbies</strong><span>Redescubra aquilo que faz seus olhos brilharem.</span><span class="card-arrow" aria-hidden="true"><svg class="card-star" viewBox="0 0 100 100"><path fill="currentColor" d="M50 0 C50 27.6 72.4 50 100 50 C72.4 50 50 72.4 50 100 C50 72.4 27.6 50 0 50 C27.6 50 50 27.6 50 0 Z" /></svg></span>
           </button>
           <button class="pillar-card pillar-movement" type="button" data-pillar="movimento">
-            <span class="pillar-icon" aria-hidden="true">↗</span><span class="pillar-number">03 / MOVIMENTO</span>
-            <strong>Saúde física</strong><span>Movimente-se com gentileza, sem cobrança.</span><span class="card-arrow" aria-hidden="true">↗</span>
+            <strong>Saúde física</strong><span>Movimente-se com gentileza, sem cobrança.</span><span class="card-arrow" aria-hidden="true"><svg class="card-star" viewBox="0 0 100 100"><path fill="currentColor" d="M50 0 C50 27.6 72.4 50 100 50 C72.4 50 50 72.4 50 100 C50 72.4 27.6 50 0 50 C27.6 50 50 27.6 50 0 Z" /></svg></span>
           </button>
           <button class="pillar-card pillar-food" type="button" data-pillar="alimentacao">
-            <span class="pillar-icon" aria-hidden="true">❋</span><span class="pillar-number">04 / NUTRIÇÃO</span>
-            <strong>Alimentação</strong><span>Mais presença e carinho à mesa, um passo por vez.</span><span class="card-arrow" aria-hidden="true">↗</span>
+            <strong>Alimentação</strong><span>Mais presença e carinho à mesa, um passo por vez.</span><span class="card-arrow" aria-hidden="true"><svg class="card-star" viewBox="0 0 100 100"><path fill="currentColor" d="M50 0 C50 27.6 72.4 50 100 50 C72.4 50 50 72.4 50 100 C50 72.4 27.6 50 0 50 C27.6 50 50 27.6 50 0 Z" /></svg></span>
           </button>
         </div>
       </section>
 
       <section class="quote-section section-shell" id="sobre">
-        <div class="quote-art" aria-hidden="true"><div class="quote-orbit"></div><span>✳</span><i>um respiro</i><strong>no meio<br>do caminho</strong></div>
+        <img class="quote-art" src="assets/mentaltech-colagem.png" alt="Colagem de quatro imagens relacionadas a autocuidado, saúde física e bem-estar" width="675" height="693">
         <div class="quote-copy">
           <span class="eyebrow">UM ECOSSISTEMA DE ACOLHIMENTO</span>
           <h2>A sua jornada é <em>única.</em></h2>
@@ -114,7 +113,7 @@
           <span class="eyebrow">SE PRECISAR, ESTAMOS AQUI</span>
           <h2>Você não precisa <em>passar por isso só.</em></h2>
           <p>Se estiver em sofrimento ou em risco imediato, procure alguém de confiança e acione um serviço de apoio. Estes canais são gratuitos ou de utilidade pública no Brasil.</p>
-          <a class="emergency-primary" href="tel:188"><span class="emergency-heart" aria-hidden="true">♡</span><span><strong>CVV · Apoio emocional</strong><small>Converse gratuitamente, 24 horas por dia</small></span><b>188 <span aria-hidden="true">↗</span></b></a>
+          <a class="emergency-primary" href="tel:188"><span><strong>CVV · Apoio emocional</strong><small>Converse gratuitamente, 24 horas por dia</small></span><b>188 <span aria-hidden="true">↗</span></b></a>
           <div class="emergency-secondary">
             <a href="tel:180"><strong>180</strong><span>Central de Atendimento à Mulher</span></a>
             <a href="tel:192"><strong>192</strong><span>SAMU · emergência médica</span></a>
@@ -122,11 +121,14 @@
           </div>
           <p class="emergency-disclaimer">Em uma emergência imediata, ligue para o serviço adequado à sua situação. A Mentaltech é um protótipo e não substitui atendimento profissional.</p>
         </div>
-        <div class="emergency-art" aria-hidden="true"><div class="emergency-art-sun"></div><div class="emergency-art-plant">✳</div><div class="emergency-art-text">Este momento<br>não define<br>seu caminho.<span>♡</span></div><div class="emergency-art-base"></div></div>
+        <div class="emergency-art" aria-hidden="true">
+          <p class="emergency-art-text">Este momento<br>não define<br>seu caminho.</p>
+          <div class="emergency-art-orbit"><svg class="emergency-art-star" viewBox="0 0 100 100"><path fill="currentColor" d="M50 0 C50 27.6 72.4 50 100 50 C72.4 50 50 72.4 50 100 C50 72.4 27.6 50 0 50 C27.6 50 50 27.6 50 0 Z" /></svg></div>
+        </div>
       </section>
 
       <section class="closing-note">
-        <span>Que bom que você chegou até aqui.</span><i aria-hidden="true">✳</i>
+        <span>Que bom que você chegou até aqui.</span>
       </section>
 
       <section id="consumer-area" class="consumer-area" aria-labelledby="consumer-title" hidden></section>
@@ -146,7 +148,6 @@
           </svg>
           <span>Mentaltech</span>
         </a>
-        <p>Um dia de cada vez, no seu tempo.</p>
         <div class="footer-links"><a href="#sobre">Sobre</a><a href="#emergencia">Rede de apoio</a><a href="https://www.cvv.org.br/" target="_blank" rel="noreferrer">CVV ↗</a></div>
       </div>
     </footer>

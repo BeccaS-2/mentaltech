@@ -59,6 +59,14 @@ const exercisePlaces = [
   { name: "Academia Comunitária", distance: 2.1, type: "Academia", schedule: "Seg-Sex · 06h-22h" },
 ];
 
+const bingoTasks = [
+  { id: "pause", text: "Fiz uma pausa para respirar" },
+  { id: "hobby", text: "Dediquei um tempo a um hobby" },
+  { id: "movement", text: "Movimentei meu corpo com gentileza" },
+  { id: "connection", text: "Conversei com alguém importante" },
+  { id: "meal", text: "Fiz uma refeição com atenção" },
+];
+
 // 🌿 NOVO: exercícios personalizados (só aparecem após consulta com nutricionista)
 const customExercises = [
   { title: "Caminhada leve no parque", duration: "25 min", focus: "Ao ar livre · baixo impacto" },
@@ -121,6 +129,7 @@ const siteNav = document.querySelector(".site-nav");
 function defaultState() {
   return {
     name: "",
+    isLoggedIn: false,
     mood: "",
     lastVisit: "",
     existingHobby: "",
@@ -129,6 +138,8 @@ function defaultState() {
     nutritionistScheduled: "",
     nutritionistName: "",
     schedule: [],
+    bingoWeek: "",
+    bingoCompletions: [],
   };
 }
 
@@ -139,6 +150,7 @@ function readState() {
     const parsed = JSON.parse(saved);
     return {
       name: typeof parsed.name === "string" ? parsed.name : "",
+      isLoggedIn: parsed.isLoggedIn === true,
       mood: typeof parsed.mood === "string" && ["tranquilo", "mais-ou-menos", "dificil"].includes(parsed.mood) ? parsed.mood : "",
       lastVisit: typeof parsed.lastVisit === "string" ? parsed.lastVisit : "",
       existingHobby: typeof parsed.existingHobby === "string" ? parsed.existingHobby : "",
@@ -146,6 +158,13 @@ function readState() {
       nutritionistApproved: parsed.nutritionistApproved === true,
       nutritionistScheduled: typeof parsed.nutritionistScheduled === "string" ? parsed.nutritionistScheduled : "",
       nutritionistName: typeof parsed.nutritionistName === "string" ? parsed.nutritionistName : "",
+      bingoWeek: typeof parsed.bingoWeek === "string" && /^\d{4}-\d{2}-\d{2}$/.test(parsed.bingoWeek)
+        ? parsed.bingoWeek
+        : "",
+      bingoCompletions: Array.isArray(parsed.bingoCompletions)
+        ? parsed.bingoCompletions.filter((id, index, entries) => bingoTasks.some((task) => task.id === id)
+          && entries.indexOf(id) === index)
+        : [],
       schedule: Array.isArray(parsed.schedule)
         ? parsed.schedule.filter((item) => item
           && typeof item.id === "string"
@@ -166,6 +185,7 @@ function readState() {
 let state = readState();
 let toastTimer;
 let picker = null;
+let pendingAuthenticatedAction = null;
 
 function saveState() {
   try {
@@ -178,6 +198,16 @@ function saveState() {
   return true;
 }
 
+function getBingoWeekKey() {
+  const weekStart = new Date();
+  weekStart.setHours(0, 0, 0, 0);
+  weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+  const year = weekStart.getFullYear();
+  const month = String(weekStart.getMonth() + 1).padStart(2, "0");
+  const day = String(weekStart.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function showToast(message) {
   toast.textContent = message;
   toast.classList.add("is-visible");
@@ -186,9 +216,32 @@ function showToast(message) {
 }
 
 function openDialog(content, initialFocusSelector) {
-  dialogContent.innerHTML = content;
+  const isPillarScreen = dialog.classList.contains("is-pillar-screen");
+  const screenNavigation = isPillarScreen
+    ? `<div class="pillar-screen-topbar">
+         <button class="pillar-screen-back" type="button" data-action="close-dialog"><span aria-hidden="true">←</span> Voltar ao site</button>
+         <span class="pillar-screen-brand"><span aria-hidden="true">✳</span> Mentaltech</span>
+       </div>`
+    : "";
+  dialogContent.innerHTML = isPillarScreen ? `${screenNavigation}<div class="pillar-screen-body">${content}</div>` : content;
   if (!dialog.open) dialog.showModal();
   if (initialFocusSelector) dialog.querySelector(initialFocusSelector)?.focus();
+}
+
+function openPillarScreen(key, content, initialFocusSelector) {
+  const pillar = pillars[key];
+  const category = { terapia: "ACOLHIMENTO", hobbies: "EXPRESSÃO", movimento: "MOVIMENTO", alimentacao: "NUTRIÇÃO" }[key];
+  dialog.classList.add("is-pillar-screen");
+  dialog.dataset.pillarScreen = key;
+  openDialog(`<header class="pillar-screen-hero">
+      <span class="pillar-screen-icon" aria-hidden="true">${pillar.icon}</span>
+      <div>
+        <span class="dialog-eyebrow">${category}</span>
+        <h2 class="dialog-heading" id="dialog-title">${pillar.title}</h2>
+        <p class="dialog-lead">${pillar.intro}</p>
+      </div>
+    </header>
+    <div class="pillar-screen-content">${content}</div>`, initialFocusSelector);
 }
 
 function escapeHTML(value) {
@@ -215,30 +268,36 @@ function dailyRecommendationsView() {
   `;
 }
 
-function loginView() {
+function loginView(message = "") {
   openDialog(`<span class="dialog-eyebrow">SEU ESPAÇO, NO SEU TEMPO</span>
     <h2 class="dialog-heading" id="dialog-title">Que bom ter você aqui.</h2>
-    <p class="dialog-lead">Entre para acessar seu espaço de acolhimento e bem-estar.</p>
-    <div class="demo-note">Este é um protótipo: use qualquer e-mail ou CPF e uma senha de 4 ou mais caracteres.</div>
+    <p class="dialog-lead">${escapeHTML(message || "Entre para acessar seu espaço de acolhimento e bem-estar.")}</p>
+    <div class="demo-note">Protótipo: use qualquer e-mail ou CPF e uma senha de 4 ou mais caracteres. Este acesso demonstrativo não verifica cadastro real.</div>
     <form id="login-form" novalidate>
       <div class="form-field"><label for="user-id">E-mail ou CPF</label><input id="user-id" name="userId" autocomplete="username" placeholder="voce@email.com ou seu CPF" required></div>
       <div class="form-field"><label for="user-password">Senha</label><input id="user-password" name="password" type="password" autocomplete="current-password" placeholder="Sua senha de demonstração" required></div>
       <div class="form-error" id="form-error" role="alert"></div>
-      <div class="form-footer"><button class="button button-primary" type="submit">Entrar no meu espaço <span aria-hidden="true">↗</span></button><button class="form-link" type="button" data-action="guest">Conhecer sem entrar</button></div>
+      <div class="form-footer"><button class="button button-primary" type="submit">Entrar no meu espaço <span aria-hidden="true">↗</span></button><button class="form-link" type="button" data-action="guest">Acesso Universitário</button></div>
     </form>`, "#user-id");
+}
+
+function requireLogin(message, action) {
+  if (state.isLoggedIn) return true;
+  pendingAuthenticatedAction = action;
+  loginView(message);
+  return false;
 }
 
 function dashboardView() {
   const firstName = state.name ? state.name.split(/\s+/)[0] : "bem-vinda";
   const greetingName = firstName.charAt(0).toLocaleUpperCase("pt-BR") + firstName.slice(1);
   const moodOptions = [
-    { key: "tranquilo", emoji: "🌿", label: "Tranquilo" },
-    { key: "mais-ou-menos", emoji: "☁️", label: "Mais ou menos" },
-    { key: "dificil", emoji: "🌧️", label: "Difícil" },
+    { key: "tranquilo", label: "Tranquilo" },
+    { key: "mais-ou-menos", label: "Mais ou menos" },
+    { key: "dificil", label: "Difícil" },
   ];
-  const moodButtons = moodOptions.map(({ key, emoji, label }) => `<button class="mood-choice" type="button" data-mood="${key}" aria-pressed="${state.mood === key}"><span aria-hidden="true">${emoji}</span>${label}</button>`).join("");
+  const moodButtons = moodOptions.map(({ key, label }) => `<button class="mood-choice" type="button" data-mood="${key}" aria-pressed="${state.mood === key}">${label}</button>`).join("");
   const pillarCards = Object.entries(pillars).map(([key, pillar]) => `<button class="dashboard-pillar" type="button" data-pillar="${key}">
-    <span class="dashboard-pillar-icon" aria-hidden="true">${pillar.icon}</span>
     <span><strong>${pillar.title}</strong><small>${key === "terapia" ? "Conheça profissionais" : "Descubra um pequeno passo"}</small></span>
   </button>`).join("");
   const today = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
@@ -286,26 +345,23 @@ function dashboardView() {
   `).join("");
   const selectedHobby = hobbyCategories.find(({ id }) => id === state.existingHobby);
   const hobbies = selectedHobby ? [selectedHobby.label] : ["Leitura", "Jardinagem", "Caminhadas ao ar livre"];
-  const hobbyCards = hobbies.map((hobby) => `<li><span aria-hidden="true">✦</span> ${escapeHTML(hobby)}</li>`).join("");
+  const hobbyCards = hobbies.map((hobby) => `<li>${escapeHTML(hobby)}</li>`).join("");
   const scheduledWorkout = state.schedule.find(({ type }) => type === "workout");
   const movementDate = scheduledWorkout ? dateForWeekday(scheduledWorkout.day) : dateOffset(2);
   const reservationTitle = scheduledWorkout ? scheduledWorkout.title : "Yoga · aula em grupo";
   const reservationLocation = scheduledWorkout ? (scheduledWorkout.subtitle || "Atividade salva no cronograma") : "Estúdio Movimento · Sala 2";
   const reservationTime = scheduledWorkout ? scheduledWorkout.time : "18h30";
-  const reservationStatus = scheduledWorkout ? "NO SEU CRONOGRAMA" : "EXEMPLO DEMONSTRATIVO";
   const scheduleCount = state.schedule.length;
-  const bingoItems = [
-    { text: "Fiz uma pausa para respirar", done: true },
-    { text: "Dediquei um tempo a um hobby", done: true },
-    { text: "Movimentei meu corpo com gentileza", done: false },
-    { text: "Conversei com alguém importante", done: false },
-    { text: "Fiz uma refeição com atenção", done: false },
-  ].map(({ text, done }) => `
-    <li class="bingo-cell${done ? " is-complete" : ""}">
-      <span class="bingo-mark" aria-hidden="true">${done ? "✓" : ""}</span>
-      <span>${text}</span>
-    </li>
-  `).join("");
+  const bingoWeek = getBingoWeekKey();
+  if (state.bingoWeek !== bingoWeek) {
+    state.bingoWeek = bingoWeek;
+    state.bingoCompletions = [];
+    saveState();
+  }
+  const bingoItems = bingoTasks.map(({ id, text }) => {
+    const isComplete = state.bingoCompletions.includes(id);
+    return `<li><button class="bingo-cell${isComplete ? " is-complete" : ""}" type="button" data-bingo-item="${id}" aria-pressed="${isComplete}">${text}</button></li>`;
+  }).join("");
 
   dialog.close();
   const consumerArea = document.querySelector("#consumer-area");
@@ -320,8 +376,6 @@ function dashboardView() {
         <button class="button button-outline" type="button" data-action="logout">Sair da conta</button>
       </header>
 
-      <p class="consumer-preview-note">Agenda, atividades e planos são demonstrações locais, sem serviços ou reservas reais. Comunidade e bingo continuam como prévias visuais.</p>
-
       <section class="dashboard-mood" aria-labelledby="consumer-mood-title">
         <strong id="consumer-mood-title">Como você está se sentindo agora?</strong>
         <div class="mood-choices">${moodButtons}</div>
@@ -331,7 +385,6 @@ function dashboardView() {
         <section class="consumer-card" aria-labelledby="therapy-title">
           <div class="consumer-section-heading">
             <div><span class="consumer-card-eyebrow">ACOLHIMENTO</span><h2 id="therapy-title">Sua terapia</h2></div>
-            <span class="consumer-card-icon" aria-hidden="true">♡</span>
           </div>
           <div class="therapist-summary">
             <span class="professional-avatar" aria-hidden="true">${therapistInitials}</span>
@@ -339,13 +392,11 @@ function dashboardView() {
           </div>
           <h3 class="consumer-list-title">Próximas sessões</h3>
           <div class="therapy-appointments">${therapyCards}</div>
-          <p class="consumer-demo-caption">Agenda demonstrativa · nenhuma sessão real foi marcada.</p>
         </section>
 
         <section class="consumer-card" aria-labelledby="hobbies-title">
           <div class="consumer-section-heading">
             <div><span class="consumer-card-eyebrow">EXPRESSÃO</span><h2 id="hobbies-title">Hobbies na sua rotina</h2></div>
-            <span class="consumer-card-icon hobby-icon" aria-hidden="true">✳</span>
           </div>
           <p class="consumer-card-intro">Atividades que você já gosta de fazer:</p>
           <ul class="hobby-list">${hobbyCards}</ul>
@@ -357,21 +408,17 @@ function dashboardView() {
       <section class="consumer-card movement-reservation" aria-labelledby="movement-title">
         <div class="consumer-section-heading">
           <div><span class="consumer-card-eyebrow">MOVIMENTO COM GENTILEZA</span><h2 id="movement-title">Sua atividade reservada</h2></div>
-          <span class="reservation-badge">${reservationStatus}</span>
         </div>
         <div class="reservation-content">
-          <span class="reservation-icon" aria-hidden="true">↗</span>
           <div><strong>${escapeHTML(reservationTitle)}</strong><span>${escapeHTML(reservationLocation)}</span></div>
           <div class="reservation-when"><strong>${escapeHTML(movementDate.weekday)}, ${escapeHTML(movementDate.full)}</strong><span>${escapeHTML(reservationTime)} · duração de 50 min</span></div>
         </div>
-        <p class="consumer-demo-caption">${scheduledWorkout ? "Atividade salva no cronograma deste navegador; não é uma reserva de academia." : "Exemplo visual; nenhuma vaga foi reservada. Você pode montar sua rotina de movimento."}</p>
         <button class="button button-outline consumer-card-action" type="button" data-pillar="movimento">Montar treino ou buscar locais</button>
       </section>
 
       <section class="consumer-card nutrition-summary" aria-labelledby="nutrition-summary-title">
         <div class="consumer-section-heading">
           <div><span class="consumer-card-eyebrow">ALIMENTAÇÃO CONSCIENTE</span><h2 id="nutrition-summary-title">${state.nutritionistScheduled ? "Seu acompanhamento nutricional" : "Seu cuidado à mesa"}</h2></div>
-          <span class="consumer-card-icon" aria-hidden="true">❋</span>
         </div>
         <p class="consumer-card-intro">${state.nutritionistScheduled
           ? `Consulta demonstrativa com ${escapeHTML(state.nutritionistName)} · ${escapeHTML(state.nutritionistScheduled)}`
@@ -390,7 +437,6 @@ function dashboardView() {
         <section class="consumer-card community-card" aria-labelledby="community-title">
           <div class="consumer-section-heading">
             <div><span class="consumer-card-eyebrow">VOCÊ NÃO ESTÁ SÓ</span><h2 id="community-title">Comunidade</h2></div>
-            <span class="consumer-card-icon community-icon" aria-hidden="true">♡</span>
           </div>
           <p class="consumer-card-intro">Um espaço para trocar experiências sobre sua jornada com a Mentaltech.</p>
           <label class="community-compose">
@@ -402,18 +448,15 @@ function dashboardView() {
             <article class="community-post"><span class="community-avatar">M</span><div><strong>Marina <small>· há 2 dias</small></strong><p>Tenho tentado reservar alguns minutos para ler antes de dormir. Está sendo um jeito gostoso de desacelerar.</p></div></article>
             <article class="community-post"><span class="community-avatar avatar-lilac">J</span><div><strong>João <small>· há 4 dias</small></strong><p>Gostei de encontrar sugestões pequenas, que consigo adaptar ao meu dia sem me cobrar tanto.</p></div></article>
           </div>
-          <p class="consumer-demo-caption">Publicações fictícias para ilustrar a comunidade. Compartilhamentos ainda não estão ativos.</p>
         </section>
 
         <section class="consumer-card bingo-card" aria-labelledby="bingo-title">
           <div class="consumer-section-heading">
             <div><span class="consumer-card-eyebrow">PEQUENAS CONQUISTAS</span><h2 id="bingo-title">Bingo de cuidados</h2></div>
-            <span class="consumer-card-icon bingo-icon" aria-hidden="true">✳</span>
           </div>
           <p class="consumer-card-intro">Uma cartela gentil para inspirar sua semana, sem obrigação de completar.</p>
-          <div class="bingo-progress"><span>Exemplo da semana</span><strong>2 de 5 cuidados</strong></div>
+          <div class="bingo-progress"><span>Cuidados da semana</span><strong aria-live="polite" aria-atomic="true">${state.bingoCompletions.length} de ${bingoTasks.length}</strong></div>
           <ul class="bingo-grid">${bingoItems}</ul>
-          <p class="consumer-demo-caption">Cartela ilustrativa · marcar os cuidados será implementado em outra etapa.</p>
         </section>
       </div>
 
@@ -422,8 +465,8 @@ function dashboardView() {
           <div><span class="consumer-card-eyebrow">SEU PRÓXIMO PASSO</span><h2 id="consumer-pillars-title">Explore seus pilares de cuidado</h2></div>
         </div>
         <div class="dashboard-pillars">${pillarCards}</div>
-        <a class="dashboard-emergency" href="tel:188"><span>Se precisar de apoio emocional agora</span><strong>CVV · 188 ↗</strong></a>
-        <button class="dashboard-schedule-cta" type="button" data-action="view-schedule">Ver meu cronograma ${scheduleCount ? `· ${scheduleCount} ${scheduleCount === 1 ? "item" : "itens"}` : ""} <span aria-hidden="true">→</span></button>
+        <a class="dashboard-emergency" href="tel:188"><span>Se precisar de apoio emocional agora</span><strong>CVV · 188</strong></a>
+        <button class="dashboard-schedule-cta" type="button" data-action="view-schedule">Ver meu cronograma ${scheduleCount ? `· ${scheduleCount} ${scheduleCount === 1 ? "item" : "itens"}` : ""}</button>
       </section>
     </div>
   `;
@@ -484,10 +527,7 @@ function hobbiesView() {
     <span class="hobby-title">${c.label}</span>
     <span class="hobby-desc">${c.description}</span>
   </button>`).join("");
-  openDialog(`
-    <span class="dialog-eyebrow">EXPRESSÃO · HOBBIES</span>
-    <h2 class="dialog-heading" id="dialog-title">${pillar.title}</h2>
-    <p class="dialog-lead">${pillar.intro}</p>
+  openPillarScreen("hobbies", `
     <div class="pillar-detail"><strong>Uma ideia gentil</strong><p>${pillar.prompt}</p></div>
     <div class="address-form">
       <label for="current-hobby">Qual hobby você já faz?</label>
@@ -588,10 +628,8 @@ function movimentoView() {
        </div>`
     : "";
 
-  openDialog(`
-    <span class="dialog-eyebrow">MOVIMENTO${state.nutritionistApproved ? " · LIBERADO" : ""}</span>
-    <h2 class="dialog-heading" id="dialog-title">${pillar.title}</h2>
-    <p class="dialog-lead">${pillar.intro}</p>
+  openPillarScreen("movimento", `
+    ${state.nutritionistApproved ? `<span class="dialog-eyebrow movement-status">SEU MOVIMENTO · LIBERADO</span>` : ""}
     <div class="pillar-detail">
       <strong>Uma ideia gentil</strong>
       <p>${pillar.prompt}</p>
@@ -622,10 +660,7 @@ function alimentacaoView() {
       </div>
       <button class="button button-outline" type="button" data-action="schedule-nutritionist" data-id="${n.id}">Agendar</button>
     </article>`).join("");
-    openDialog(`
-      <span class="dialog-eyebrow">NUTRIÇÃO · CONSULTA</span>
-      <h2 class="dialog-heading" id="dialog-title">${pillar.title}</h2>
-      <p class="dialog-lead">${pillar.intro}</p>
+    openPillarScreen("alimentacao", `
       <div class="pillar-detail"><strong>Uma ideia gentil</strong><p>${pillar.prompt}</p></div>
       <h3 class="dashboard-section-title">Escolha uma profissional</h3>
       <div class="nutritionist-list">${nutCards}</div>
@@ -636,9 +671,8 @@ function alimentacaoView() {
     `);
     return;
   }
-  openDialog(`
-    <span class="dialog-eyebrow">NUTRIÇÃO · PLANO ALIMENTAR</span>
-    <h2 class="dialog-heading" id="dialog-title">Seu plano, com carinho.</h2>
+  openPillarScreen("alimentacao", `
+    <h3 class="dashboard-section-title">Seu plano, com carinho.</h3>
     <p class="dialog-lead">Plano elaborado por <strong>${escapeHTML(state.nutritionistName)}</strong>. Consulta: ${escapeHTML(state.nutritionistScheduled)}.</p>
     <h3 class="dashboard-section-title">Seu dia alimentar</h3>
     <div class="diet-list">
@@ -687,6 +721,26 @@ function scheduleView() {
     </div>`);
 }
 
+function removeScheduleItem(id) {
+  const previousSchedule = state.schedule;
+  state.schedule = state.schedule.filter(item => item.id !== id);
+  if (!saveState()) {
+    state.schedule = previousSchedule;
+    return;
+  }
+  scheduleView();
+}
+
+function clearSchedule() {
+  const previousSchedule = state.schedule;
+  state.schedule = [];
+  if (!saveState()) {
+    state.schedule = previousSchedule;
+    return;
+  }
+  scheduleView();
+}
+
 function openPicker(pickerData) {
   picker = pickerData;
   renderPicker();
@@ -711,19 +765,18 @@ function renderPicker() {
 }
 
 function pillarView(key) {
+  if (!pillars[key]) return;
   if (key === "hobbies") return hobbiesView();
   if (key === "movimento") return movimentoView();
   if (key === "alimentacao") return alimentacaoView();
   const pillar = pillars[key];
-  if (!pillar) return;
-  openDialog(`<span class="dialog-eyebrow">UM PASSO DE CADA VEZ</span>
-    <h2 class="dialog-heading" id="dialog-title">${pillar.title}</h2>
-    <p class="dialog-lead">${pillar.intro}</p>
+  openPillarScreen(key, `
     <div class="pillar-detail"><strong>Uma ideia gentil</strong><p>${pillar.prompt}</p></div>
     ${key === "terapia" ? `<div class="form-footer"><button class="button button-primary" type="button" data-action="professionals">Conhecer profissionais <span aria-hidden="true">↗</span></button><button class="button button-outline" type="button" data-action="dashboard">Voltar</button></div>` : `<div class="form-footer"><button class="button button-primary" type="button" data-action="checkin" data-pillar="${key}">Guardar ideia</button><button class="button button-outline" type="button" data-action="dashboard">Voltar</button></div>`}`);
 }
 
 function setMood(mood) {
+  if (!requireLogin("Entre no seu espaço para salvar seu check-in de humor.", () => setMood(mood))) return;
   state.mood = mood;
   state.lastVisit = new Date().toISOString();
   if (!saveState()) return;
@@ -735,6 +788,25 @@ function setMood(mood) {
 document.addEventListener("click", (event) => {
   const target = event.target instanceof Element ? event.target : null;
   if (!target) return;
+  const bingoButton = target.closest("[data-bingo-item]");
+  if (bingoButton) {
+    const taskId = bingoButton.getAttribute("data-bingo-item");
+    if (!bingoTasks.some((task) => task.id === taskId)) return;
+    const bingoWeek = getBingoWeekKey();
+    if (state.bingoWeek !== bingoWeek) {
+      state.bingoWeek = bingoWeek;
+      state.bingoCompletions = [];
+    }
+    const alreadyComplete = state.bingoCompletions.includes(taskId);
+    state.bingoCompletions = alreadyComplete
+      ? state.bingoCompletions.filter((id) => id !== taskId)
+      : [...state.bingoCompletions, taskId];
+    if (saveState()) {
+      dashboardView();
+      document.querySelector(`[data-bingo-item="${taskId}"]`)?.focus();
+    }
+    return;
+  }
   const moodButton = target.closest("[data-mood]");
   if (moodButton) { setMood(moodButton.getAttribute("data-mood")); return; }
   const actionElement = target.closest("[data-action]");
@@ -745,13 +817,30 @@ document.addEventListener("click", (event) => {
   if (action !== "close-and-emergency") event.preventDefault();
   switch (action) {
     case "login":
-    case "start":
+      pendingAuthenticatedAction = null;
+      picker = null;
       loginView(); return;
+    case "start":
+      pendingAuthenticatedAction = null;
+      picker = null;
+      loginView(); return;
+    case "explore-pillars":
+      document.querySelector("#pilares")?.scrollIntoView({ behavior: "smooth" });
+      return;
     case "close-dialog":
       dialog.close(); return;
     case "guest":
-      if (!state.name) state.name = "você";
-      if (saveState()) dashboardView(); return;
+      pendingAuthenticatedAction = null;
+      picker = null;
+      state = defaultState();
+      state.name = "Visitante";
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (error) {
+        console.error("Não foi possível remover os dados de demonstração.", error);
+        showToast("Não foi possível remover os dados deste navegador.");
+      }
+      dashboardView(); return;
     case "dashboard":
       dashboardView(); return;
     case "professionals":
@@ -774,6 +863,10 @@ document.addEventListener("click", (event) => {
     case "save-existing-hobby": {
       const input = dialog.querySelector("#current-hobby");
       const value = input ? input.value : "";
+      if (!requireLogin("Entre para salvar seus hobbies na sua rotina.", () => {
+        state.existingHobby = value;
+        if (saveState()) { hobbiesView(); showToast("Hobby salvo."); }
+      })) return;
       state.existingHobby = value;
       if (saveState()) { hobbiesView(); showToast("Hobby salvo."); }
       return;
@@ -793,12 +886,18 @@ document.addEventListener("click", (event) => {
       const value = input ? input.value.trim() : "";
       if (!value) { showToast("Informe um CEP ou endereço."); return; }
       state.workoutAddress = value.slice(0, 120);
-      if (saveState()) { movimentoView(); showToast("Endereço salvo; locais demonstrativos exibidos."); }
+      if (!state.isLoggedIn) {
+        movimentoView();
+        showToast("Locais demonstrativos exibidos. Entre para salvar seu endereço.");
+      } else if (saveState()) {
+        movimentoView();
+        showToast("Endereço salvo; locais demonstrativos exibidos.");
+      }
       return;
     }
     case "edit-workout-address":
       state.workoutAddress = "";
-      if (saveState()) movimentoView();
+      if (!state.isLoggedIn || saveState()) movimentoView();
       return;
     case "schedule-workout": {
       const idx = parseInt(actionElement.getAttribute("data-index"), 10);
@@ -853,6 +952,10 @@ document.addEventListener("click", (event) => {
       return;
     case "confirm-pick": {
       if (!picker || !picker.day || !picker.time) return;
+      if (!requireLogin("Entre no seu espaço para confirmar este agendamento.", () => {
+        renderPicker();
+        showToast("Você entrou. Confirme sua escolha para continuar.");
+      })) return;
       const { type, payload, day, time } = picker;
       if (type === "nutritionist") {
         if (!payload || !payload.nutName) return;
@@ -910,29 +1013,22 @@ document.addEventListener("click", (event) => {
     }
     /* CRONOGRAMA */
     case "view-schedule":
+      if (!requireLogin("Entre no seu espaço para ver seu cronograma.", () => scheduleView())) return;
       scheduleView(); return;
     case "remove-item": {
       const id = actionElement.getAttribute("data-id");
-      const previousSchedule = state.schedule;
-      state.schedule = state.schedule.filter(item => item.id !== id);
-      if (!saveState()) {
-        state.schedule = previousSchedule;
-        return;
-      }
-      scheduleView();
+      if (!requireLogin("Entre no seu espaço para editar seu cronograma.", () => removeScheduleItem(id))) return;
+      removeScheduleItem(id);
       return;
     }
     case "clear-schedule": {
-      const previousSchedule = state.schedule;
-      state.schedule = [];
-      if (!saveState()) {
-        state.schedule = previousSchedule;
-        return;
-      }
-      scheduleView();
+      if (!requireLogin("Entre no seu espaço para editar seu cronograma.", clearSchedule)) return;
+      clearSchedule();
       return;
     }
     case "logout":
+      pendingAuthenticatedAction = null;
+      picker = null;
       state = defaultState();
       try {
         localStorage.removeItem(STORAGE_KEY);
@@ -949,6 +1045,10 @@ document.addEventListener("click", (event) => {
       loginView();
       return;
     case "checkin":
+      if (!requireLogin("Entre no seu espaço para guardar esta ideia.", () => {
+        showToast("Ideia salva.");
+        dashboardView();
+      })) return;
       showToast("Ideia salva.");
       dashboardView();
       return;
@@ -966,6 +1066,11 @@ dialog.addEventListener("click", (event) => {
   if (event.target === dialog) dialog.close();
 });
 
+dialog.addEventListener("close", () => {
+  dialog.classList.remove("is-pillar-screen");
+  delete dialog.dataset.pillarScreen;
+});
+
 dialog.addEventListener("submit", (event) => {
   if (!(event.target instanceof HTMLFormElement) || event.target.id !== "login-form") return;
   event.preventDefault();
@@ -978,9 +1083,24 @@ dialog.addEventListener("submit", (event) => {
     return;
   }
   const guessedName = userId.includes("@") ? userId.split("@")[0].split(/[._-]/)[0] : "você";
-  state.name = guessedName.slice(0, 40);
-  state.lastVisit = new Date().toISOString();
-  if (saveState()) dashboardView();
+  const previousState = state;
+  state = {
+    ...state,
+    name: guessedName.slice(0, 40),
+    isLoggedIn: true,
+    lastVisit: new Date().toISOString(),
+  };
+  if (!saveState()) {
+    state = previousState;
+    return;
+  }
+  const nextAction = pendingAuthenticatedAction;
+  pendingAuthenticatedAction = null;
+  if (nextAction) {
+    nextAction();
+  } else {
+    dashboardView();
+  }
 });
 
 menuToggle.addEventListener("click", () => {

@@ -834,13 +834,11 @@ document.addEventListener("click", (event) => {
     case "guest":
       pendingAuthenticatedAction = null;
       picker = null;
-      state = defaultState();
-      state.name = "Visitante";
-      try {
-        localStorage.removeItem(STORAGE_KEY);
-      } catch (error) {
-        console.error("Não foi possível remover os dados de demonstração.", error);
-        showToast("Não foi possível remover os dados deste navegador.");
+      const previousState = state;
+      state = { ...defaultState(), name: "Visitante", isLoggedIn: true };
+      if (!saveState()) {
+        state = previousState;
+        return;
       }
       dashboardView(); return;
     case "dashboard":

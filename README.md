@@ -11,7 +11,7 @@ A Mentaltech apresenta um espaço acolhedor onde o cuidado com a mente vai além
 O protótipo inclui:
 
 - página inicial responsiva, com navegação entre seções;
-- exploração pública dos pilares de cuidado; salvar preferências, check-ins e editar o cronograma requer o login demonstrativo;
+- exploração pública dos pilares de cuidado; o acesso universitário libera todas as funcionalidades como visitante, sem exigir login;
 - acesso demonstrativo por e-mail ou CPF e senha, ou exploração como visitante; o login não valida uma conta cadastrada;
 - área do consumidor demonstrativa após entrar, com terapeuta e próximas sessões, hobbies, sugestões diárias, reserva de atividade física, comunidade e bingo semanal de cuidados;
 - agendamento demonstrativo de terapia, hobbies, refeições e exercícios, com cronograma semanal e plano alimentar de exemplo; esses dados ficam no navegador e não criam reservas reais;

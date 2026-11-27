@@ -146,9 +146,19 @@ function readState() {
       nutritionistApproved: parsed.nutritionistApproved === true,
       nutritionistScheduled: typeof parsed.nutritionistScheduled === "string" ? parsed.nutritionistScheduled : "",
       nutritionistName: typeof parsed.nutritionistName === "string" ? parsed.nutritionistName : "",
-      schedule: Array.isArray(parsed.schedule) ? parsed.schedule.filter(item => item && item.id && item.day && item.time && item.title) : [],
+      schedule: Array.isArray(parsed.schedule)
+        ? parsed.schedule.filter((item) => item
+          && typeof item.id === "string"
+          && /^[\w-]{1,80}$/.test(item.id)
+          && ["therapy", "hobby", "workout", "meal", "nutritionist"].includes(item.type)
+          && WEEK_DAYS.includes(item.day)
+          && SCHEDULE_TIMES.includes(item.time)
+          && typeof item.title === "string"
+          && (item.subtitle === undefined || typeof item.subtitle === "string"))
+        : [],
     };
   } catch (error) {
+    console.warn("Não foi possível carregar os dados de demonstração.", error);
     return defaultState();
   }
 }
@@ -161,7 +171,8 @@ function saveState() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch (error) {
-    showToast("Não foi possível salvar. Tente novamente.");
+    console.error("Não foi possível salvar os dados de demonstração.", error);
+    showToast("Não foi possível salvar. Tente novamente neste navegador.");
     return false;
   }
   return true;
@@ -185,16 +196,23 @@ function escapeHTML(value) {
 }
 
 function dailyRecommendationsView() {
-  const recommendation = dailyRecommendations[state.mood];
+  const recommendation = dailyRecommendations[state.mood] || dailyRecommendations["mais-ou-menos"];
   const suggestionCards = recommendation
     ? recommendation.items.map(({ pillar, text }) => `<li class="recommendation-card"><strong>${pillar}</strong><span>${text}</span></li>`).join("")
     : "";
-  return `<section class="daily-recommendations" aria-labelledby="recommendation-title" aria-live="polite">
-    <span class="recommendation-eyebrow">SUGESTÕES DE HOJE</span>
-    <h3 class="recommendation-title" id="recommendation-title">${recommendation?.title || "Sua sugestão para hoje"}</h3>
-    <p class="recommendation-description">${recommendation?.description || "Faça seu check-in para receber ideias leves de cuidado."}</p>
-    ${suggestionCards ? `<ul class="recommendation-list">${suggestionCards}</ul>` : ""}
-  </section>`;
+  const title = state.mood ? recommendation.title : "Ideias leves para o seu dia";
+  const description = state.mood
+    ? recommendation.description
+    : "Escolha uma ideia simples e possível; você pode adaptar cada sugestão ao seu momento.";
+
+  return `
+    <section class="daily-recommendations" aria-labelledby="recommendation-title" aria-live="polite">
+      <span class="recommendation-eyebrow">SUGESTÕES DE HOJE</span>
+      <h3 class="recommendation-title" id="recommendation-title">${title}</h3>
+      <p class="recommendation-description">${description}</p>
+      ${suggestionCards ? `<ul class="recommendation-list">${suggestionCards}</ul>` : ""}
+    </section>
+  `;
 }
 
 function loginView() {
@@ -211,7 +229,8 @@ function loginView() {
 }
 
 function dashboardView() {
-  const firstName = state.name ? state.name.split(/\s+/)[0] : "você";
+  const firstName = state.name ? state.name.split(/\s+/)[0] : "bem-vinda";
+  const greetingName = firstName.charAt(0).toLocaleUpperCase("pt-BR") + firstName.slice(1);
   const moodOptions = [
     { key: "tranquilo", emoji: "🌿", label: "Tranquilo" },
     { key: "mais-ou-menos", emoji: "☁️", label: "Mais ou menos" },
@@ -223,17 +242,201 @@ function dashboardView() {
     <span><strong>${pillar.title}</strong><small>${key === "terapia" ? "Conheça profissionais" : "Descubra um pequeno passo"}</small></span>
   </button>`).join("");
   const today = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
+  const dateOffset = (days) => {
+    const date = new Date();
+    date.setHours(12, 0, 0, 0);
+    date.setDate(date.getDate() + days);
+    return {
+      day: new Intl.DateTimeFormat("pt-BR", { day: "2-digit" }).format(date),
+      month: new Intl.DateTimeFormat("pt-BR", { month: "short" }).format(date).replace(".", ""),
+      weekday: new Intl.DateTimeFormat("pt-BR", { weekday: "long" }).format(date),
+      full: new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long" }).format(date),
+    };
+  };
+  const dateForWeekday = (weekday) => {
+    const targetDay = WEEK_DAYS.indexOf(weekday);
+    if (targetDay < 0) return dateOffset(4);
+    const today = new Date();
+    const currentDay = (today.getDay() + 6) % 7;
+    let days = (targetDay - currentDay + 7) % 7;
+    if (days === 0) days = 7;
+    return dateOffset(days);
+  };
+  const bookedTherapy = state.schedule.filter(({ type }) => type === "therapy");
+  const therapyAppointments = bookedTherapy.length
+    ? bookedTherapy.map((item) => ({
+      date: dateForWeekday(item.day),
+      time: item.time,
+      therapist: item.title.replace(/^Consulta com /, ""),
+    }))
+    : [
+    { date: dateOffset(4), time: "14h30" },
+    { date: dateOffset(11), time: "14h30" },
+  ];
+  const hobbySuggestion = (dailyRecommendations[state.mood] || dailyRecommendations["mais-ou-menos"]).items.find(({ pillar }) => pillar === "Hobbies")?.text
+    || "Reserve alguns minutos para experimentar uma atividade que desperte sua curiosidade.";
+  const therapistName = therapyAppointments[0]?.therapist || "Dra. Ana Oliveira";
+  const therapistInitials = professionals.find(({ name }) => name === therapistName)?.initials || "AO";
+  const therapyCards = therapyAppointments.map(({ date, time }) => `
+    <article class="therapy-appointment">
+      <div class="appointment-date"><strong>${date.day}</strong><span>${date.month}</span></div>
+      <div class="appointment-details"><strong>${escapeHTML(date.weekday)}, ${escapeHTML(time)}</strong><span>Sessão online · 50 minutos</span></div>
+      <span class="appointment-status">${bookedTherapy.length ? "Agendada" : "Exemplo"}</span>
+    </article>
+  `).join("");
+  const selectedHobby = hobbyCategories.find(({ id }) => id === state.existingHobby);
+  const hobbies = selectedHobby ? [selectedHobby.label] : ["Leitura", "Jardinagem", "Caminhadas ao ar livre"];
+  const hobbyCards = hobbies.map((hobby) => `<li><span aria-hidden="true">✦</span> ${escapeHTML(hobby)}</li>`).join("");
+  const scheduledWorkout = state.schedule.find(({ type }) => type === "workout");
+  const movementDate = scheduledWorkout ? dateForWeekday(scheduledWorkout.day) : dateOffset(2);
+  const reservationTitle = scheduledWorkout ? scheduledWorkout.title : "Yoga · aula em grupo";
+  const reservationLocation = scheduledWorkout ? (scheduledWorkout.subtitle || "Atividade salva no cronograma") : "Estúdio Movimento · Sala 2";
+  const reservationTime = scheduledWorkout ? scheduledWorkout.time : "18h30";
+  const reservationStatus = scheduledWorkout ? "NO SEU CRONOGRAMA" : "EXEMPLO DEMONSTRATIVO";
   const scheduleCount = state.schedule.length;
-  openDialog(`<div class="dashboard-top">
-    <div><span class="dialog-eyebrow">${escapeHTML(today.toUpperCase())} · SEU ESPAÇO</span><h2 class="dashboard-name" id="dialog-title">Olá, ${escapeHTML(firstName)}.</h2><span class="dashboard-date">Que bom que você está aqui.</span></div>
-  </div>
-  <div class="dashboard-mood"><strong>Como você está se sentindo agora?</strong><div class="mood-choices">${moodButtons}</div></div>
-  <a class="dashboard-emergency" href="#emergencia" data-action="close-and-emergency"><span>Se precisar de apoio emocional agora</span><strong>CVV · 188 ↗</strong></a>
-  ${dailyRecommendationsView()}
-  <h3 class="dashboard-section-title">Seu cuidado, em quatro pilares</h3>
-  <div class="dashboard-pillars">${pillarCards}</div>
-  <button class="dashboard-schedule-cta" type="button" data-action="view-schedule">📅 Ver meu cronograma ${scheduleCount ? `· ${scheduleCount} ${scheduleCount === 1 ? "item" : "itens"}` : ""} <span aria-hidden="true">→</span></button>
-  <button class="form-link dashboard-exit" type="button" data-action="logout">Sair deste espaço</button>`);
+  const bingoItems = [
+    { text: "Fiz uma pausa para respirar", done: true },
+    { text: "Dediquei um tempo a um hobby", done: true },
+    { text: "Movimentei meu corpo com gentileza", done: false },
+    { text: "Conversei com alguém importante", done: false },
+    { text: "Fiz uma refeição com atenção", done: false },
+  ].map(({ text, done }) => `
+    <li class="bingo-cell${done ? " is-complete" : ""}">
+      <span class="bingo-mark" aria-hidden="true">${done ? "✓" : ""}</span>
+      <span>${text}</span>
+    </li>
+  `).join("");
+
+  dialog.close();
+  const consumerArea = document.querySelector("#consumer-area");
+  consumerArea.innerHTML = `
+    <div class="consumer-shell">
+      <header class="consumer-header">
+        <div>
+          <span class="consumer-eyebrow">${escapeHTML(today.toUpperCase())} · SEU ESPAÇO</span>
+          <h1 class="consumer-title" id="consumer-title" tabindex="-1">Olá, ${escapeHTML(greetingName)}.</h1>
+          <p>Seu cuidado, organizado do seu jeito.</p>
+        </div>
+        <button class="button button-outline" type="button" data-action="logout">Sair da conta</button>
+      </header>
+
+      <p class="consumer-preview-note">Agenda, atividades e planos são demonstrações locais, sem serviços ou reservas reais. Comunidade e bingo continuam como prévias visuais.</p>
+
+      <section class="dashboard-mood" aria-labelledby="consumer-mood-title">
+        <strong id="consumer-mood-title">Como você está se sentindo agora?</strong>
+        <div class="mood-choices">${moodButtons}</div>
+      </section>
+
+      <div class="consumer-overview">
+        <section class="consumer-card" aria-labelledby="therapy-title">
+          <div class="consumer-section-heading">
+            <div><span class="consumer-card-eyebrow">ACOLHIMENTO</span><h2 id="therapy-title">Sua terapia</h2></div>
+            <span class="consumer-card-icon" aria-hidden="true">♡</span>
+          </div>
+          <div class="therapist-summary">
+            <span class="professional-avatar" aria-hidden="true">${therapistInitials}</span>
+            <span><strong>${escapeHTML(therapistName)}</strong><small>${bookedTherapy.length ? "Consulta no seu cronograma" : "Terapeuta demonstrativa · Psicologia clínica"}</small></span>
+          </div>
+          <h3 class="consumer-list-title">Próximas sessões</h3>
+          <div class="therapy-appointments">${therapyCards}</div>
+          <p class="consumer-demo-caption">Agenda demonstrativa · nenhuma sessão real foi marcada.</p>
+        </section>
+
+        <section class="consumer-card" aria-labelledby="hobbies-title">
+          <div class="consumer-section-heading">
+            <div><span class="consumer-card-eyebrow">EXPRESSÃO</span><h2 id="hobbies-title">Hobbies na sua rotina</h2></div>
+            <span class="consumer-card-icon hobby-icon" aria-hidden="true">✳</span>
+          </div>
+          <p class="consumer-card-intro">Atividades que você já gosta de fazer:</p>
+          <ul class="hobby-list">${hobbyCards}</ul>
+          <div class="hobby-suggestion"><span class="consumer-card-eyebrow">IDEIA LEVE PARA HOJE</span><p>${escapeHTML(hobbySuggestion)}</p></div>
+          <button class="button button-outline consumer-card-action" type="button" data-pillar="hobbies">Gerenciar hobbies</button>
+        </section>
+      </div>
+
+      <section class="consumer-card movement-reservation" aria-labelledby="movement-title">
+        <div class="consumer-section-heading">
+          <div><span class="consumer-card-eyebrow">MOVIMENTO COM GENTILEZA</span><h2 id="movement-title">Sua atividade reservada</h2></div>
+          <span class="reservation-badge">${reservationStatus}</span>
+        </div>
+        <div class="reservation-content">
+          <span class="reservation-icon" aria-hidden="true">↗</span>
+          <div><strong>${escapeHTML(reservationTitle)}</strong><span>${escapeHTML(reservationLocation)}</span></div>
+          <div class="reservation-when"><strong>${escapeHTML(movementDate.weekday)}, ${escapeHTML(movementDate.full)}</strong><span>${escapeHTML(reservationTime)} · duração de 50 min</span></div>
+        </div>
+        <p class="consumer-demo-caption">${scheduledWorkout ? "Atividade salva no cronograma deste navegador; não é uma reserva de academia." : "Exemplo visual; nenhuma vaga foi reservada. Você pode montar sua rotina de movimento."}</p>
+        <button class="button button-outline consumer-card-action" type="button" data-pillar="movimento">Montar treino ou buscar locais</button>
+      </section>
+
+      <section class="consumer-card nutrition-summary" aria-labelledby="nutrition-summary-title">
+        <div class="consumer-section-heading">
+          <div><span class="consumer-card-eyebrow">ALIMENTAÇÃO CONSCIENTE</span><h2 id="nutrition-summary-title">${state.nutritionistScheduled ? "Seu acompanhamento nutricional" : "Seu cuidado à mesa"}</h2></div>
+          <span class="consumer-card-icon" aria-hidden="true">❋</span>
+        </div>
+        <p class="consumer-card-intro">${state.nutritionistScheduled
+          ? `Consulta demonstrativa com ${escapeHTML(state.nutritionistName)} · ${escapeHTML(state.nutritionistScheduled)}`
+          : "Conheça profissionais demonstrativos e veja seu plano alimentar de exemplo."}</p>
+        <button class="button button-outline consumer-card-action" type="button" data-pillar="alimentacao">${state.nutritionistScheduled ? "Ver plano alimentar" : "Conhecer nutricionistas"}</button>
+      </section>
+
+      <section class="consumer-card consumer-recommendations" aria-labelledby="daily-care-title">
+        <div class="consumer-section-heading">
+          <div><span class="consumer-card-eyebrow">UM DIA DE CADA VEZ</span><h2 id="daily-care-title">Sugestões de cuidado para hoje</h2></div>
+        </div>
+        ${dailyRecommendationsView()}
+      </section>
+
+      <div class="community-bingo-grid">
+        <section class="consumer-card community-card" aria-labelledby="community-title">
+          <div class="consumer-section-heading">
+            <div><span class="consumer-card-eyebrow">VOCÊ NÃO ESTÁ SÓ</span><h2 id="community-title">Comunidade</h2></div>
+            <span class="consumer-card-icon community-icon" aria-hidden="true">♡</span>
+          </div>
+          <p class="consumer-card-intro">Um espaço para trocar experiências sobre sua jornada com a Mentaltech.</p>
+          <label class="community-compose">
+            <span>Compartilhe um momento da sua jornada</span>
+            <textarea rows="3" placeholder="O que você gostaria de contar?" disabled></textarea>
+          </label>
+          <button class="button button-primary community-submit" type="button" disabled>Compartilhar · em breve</button>
+          <div class="community-posts" aria-label="Exemplos de publicações da comunidade">
+            <article class="community-post"><span class="community-avatar">M</span><div><strong>Marina <small>· há 2 dias</small></strong><p>Tenho tentado reservar alguns minutos para ler antes de dormir. Está sendo um jeito gostoso de desacelerar.</p></div></article>
+            <article class="community-post"><span class="community-avatar avatar-lilac">J</span><div><strong>João <small>· há 4 dias</small></strong><p>Gostei de encontrar sugestões pequenas, que consigo adaptar ao meu dia sem me cobrar tanto.</p></div></article>
+          </div>
+          <p class="consumer-demo-caption">Publicações fictícias para ilustrar a comunidade. Compartilhamentos ainda não estão ativos.</p>
+        </section>
+
+        <section class="consumer-card bingo-card" aria-labelledby="bingo-title">
+          <div class="consumer-section-heading">
+            <div><span class="consumer-card-eyebrow">PEQUENAS CONQUISTAS</span><h2 id="bingo-title">Bingo de cuidados</h2></div>
+            <span class="consumer-card-icon bingo-icon" aria-hidden="true">✳</span>
+          </div>
+          <p class="consumer-card-intro">Uma cartela gentil para inspirar sua semana, sem obrigação de completar.</p>
+          <div class="bingo-progress"><span>Exemplo da semana</span><strong>2 de 5 cuidados</strong></div>
+          <ul class="bingo-grid">${bingoItems}</ul>
+          <p class="consumer-demo-caption">Cartela ilustrativa · marcar os cuidados será implementado em outra etapa.</p>
+        </section>
+      </div>
+
+      <section class="consumer-card consumer-pillars" aria-labelledby="consumer-pillars-title">
+        <div class="consumer-section-heading">
+          <div><span class="consumer-card-eyebrow">SEU PRÓXIMO PASSO</span><h2 id="consumer-pillars-title">Explore seus pilares de cuidado</h2></div>
+        </div>
+        <div class="dashboard-pillars">${pillarCards}</div>
+        <a class="dashboard-emergency" href="tel:188"><span>Se precisar de apoio emocional agora</span><strong>CVV · 188 ↗</strong></a>
+        <button class="dashboard-schedule-cta" type="button" data-action="view-schedule">Ver meu cronograma ${scheduleCount ? `· ${scheduleCount} ${scheduleCount === 1 ? "item" : "itens"}` : ""} <span aria-hidden="true">→</span></button>
+      </section>
+    </div>
+  `;
+  consumerArea.hidden = false;
+  document.body.classList.add("is-consumer-view");
+  const brand = document.querySelector(".site-header .brand");
+  brand.href = "#consumer-area";
+  brand.setAttribute("aria-label", "Mentaltech — meu espaço");
+  siteNav.classList.remove("is-open");
+  menuToggle.setAttribute("aria-expanded", "false");
+  menuToggle.setAttribute("aria-label", "Abrir menu");
+  document.querySelector("#consumer-title")?.focus();
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function professionalsView(filter = "todos") {
@@ -287,7 +490,7 @@ function hobbiesView() {
     <p class="dialog-lead">${pillar.intro}</p>
     <div class="pillar-detail"><strong>Uma ideia gentil</strong><p>${pillar.prompt}</p></div>
     <div class="address-form">
-      <label for="current-hobby">Qual hobbie você já faz?</label>
+      <label for="current-hobby">Qual hobby você já faz?</label>
       <div class="address-input-row">
         <select id="current-hobby">
           <option value="">Selecione um hobbie...</option>
@@ -317,7 +520,7 @@ function movimentoView() {
          <button class="form-link" type="button" data-action="edit-workout-address">Editar</button>
        </div>`
     : `<div class="address-form">
-         <label for="workout-address-input">Informe seu CEP para vermos locais de exercício perto de você</label>
+         <label for="workout-address-input">Informe um CEP ou endereço para ver locais demonstrativos</label>
          <div class="address-input-row">
            <input id="workout-address-input" placeholder="Ex: 01310-100 ou Pinheiros, SP" autocomplete="postal-code" />
            <button class="button button-primary" type="button" data-action="save-workout-address">Buscar</button>
@@ -326,7 +529,7 @@ function movimentoView() {
 
   // Lista de lugares próximos — só aparece após informar o CEP
   const placesSection = state.workoutAddress
-    ? `<h3 class="dashboard-section-title">Lugares perto de você para se movimentar</h3>
+    ? `<h3 class="dashboard-section-title">Exemplos de locais para se movimentar</h3>
        <div class="place-list">
          ${exercisePlaces.map(p => `
            <article class="place-card">
@@ -340,7 +543,7 @@ function movimentoView() {
        </div>
        <div class="workout-map">
          <iframe src="https://www.openstreetmap.org/export/embed.html?bbox=-46.6700%2C-23.5920%2C-46.6480%2C-23.5820&layer=mapnik&marker=-23.5870%2C-46.6580" loading="lazy" title="Mapa demonstrativo"></iframe>
-         <small>Mapa ilustrativo — os locais reais podem variar conforme seu endereço.</small>
+         <small>Mapa e locais de exemplo; não há busca real por endereço.</small>
        </div>`
     : "";
 
@@ -369,6 +572,21 @@ function movimentoView() {
            Ir para Nutrição <span aria-hidden="true">↗</span>
          </button>
        </div>`;
+  const weeklyWorkoutSection = state.nutritionistApproved
+    ? `<h3 class="dashboard-section-title">Sugestões de movimento para a semana</h3>
+       <div class="workout-list">
+         ${workoutPlanSample.map((workout, index) => `
+           <article class="workout-card">
+             <div class="workout-day">${workout.day}</div>
+             <div class="workout-info">
+               <strong>${workout.title}</strong>
+               <span>${workout.duration} · ${workout.focus}</span>
+             </div>
+             <button class="button button-outline" type="button" data-action="schedule-workout" data-index="${index}">Agendar</button>
+           </article>
+         `).join("")}
+       </div>`
+    : "";
 
   openDialog(`
     <span class="dialog-eyebrow">MOVIMENTO${state.nutritionistApproved ? " · LIBERADO" : ""}</span>
@@ -383,6 +601,7 @@ function movimentoView() {
     ${placesSection}
 
     ${customWorkoutSection}
+    ${weeklyWorkoutSection}
 
     <div class="form-footer">
       <button class="button button-outline" type="button" data-action="dashboard">Voltar ao meu espaço</button>
@@ -460,7 +679,7 @@ function scheduleView() {
       </div>`).join("")}
     </div>` : `<div class="locked-card empty-schedule">
       <h3>Seu cronograma está vazio</h3>
-      <p>Quando você agendar um hobby, treino ou refeição, eles aparecerão aqui.</p>
+      <p>Quando você agendar uma consulta, hobby, treino ou refeição, eles aparecerão aqui.</p>
     </div>`}
     <div class="form-footer">
       <button class="button button-outline" type="button" data-action="dashboard">Voltar</button>
@@ -509,7 +728,8 @@ function setMood(mood) {
   state.lastVisit = new Date().toISOString();
   if (!saveState()) return;
   dashboardView();
-  dialog.querySelector(`[data-mood="${mood}"]`)?.focus();
+  document.querySelector(`[data-mood="${mood}"]`)?.focus();
+  showToast("Obrigado por fazer essa pausa. Vamos no seu ritmo.");
 }
 
 document.addEventListener("click", (event) => {
@@ -555,7 +775,7 @@ document.addEventListener("click", (event) => {
       const input = dialog.querySelector("#current-hobby");
       const value = input ? input.value : "";
       state.existingHobby = value;
-      if (saveState()) { hobbiesView(); showToast("Hobbie salvo."); }
+      if (saveState()) { hobbiesView(); showToast("Hobby salvo."); }
       return;
     }
     case "schedule-hobby-direct": {
@@ -573,7 +793,7 @@ document.addEventListener("click", (event) => {
       const value = input ? input.value.trim() : "";
       if (!value) { showToast("Informe um CEP ou endereço."); return; }
       state.workoutAddress = value.slice(0, 120);
-      if (saveState()) { movimentoView(); showToast("Locais de exercício atualizados."); }
+      if (saveState()) { movimentoView(); showToast("Endereço salvo; locais demonstrativos exibidos."); }
       return;
     }
     case "edit-workout-address":
@@ -635,10 +855,26 @@ document.addEventListener("click", (event) => {
       if (!picker || !picker.day || !picker.time) return;
       const { type, payload, day, time } = picker;
       if (type === "nutritionist") {
-        state.nutritionistApproved = true;
-        state.nutritionistScheduled = `${day} · ${time}`;
-        state.nutritionistName = payload.nutName;
-        if (!saveState()) return;
+        if (!payload || !payload.nutName) return;
+        const previousState = state;
+        state = {
+          ...state,
+          nutritionistApproved: true,
+          nutritionistScheduled: `${day} · ${time}`,
+          nutritionistName: payload.nutName,
+          schedule: [...state.schedule, {
+            id: "sched-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
+            type,
+            day,
+            time,
+            title: `Consulta com ${payload.nutName}`,
+            subtitle: "Consulta nutricional",
+          }],
+        };
+        if (!saveState()) {
+          state = previousState;
+          return;
+        }
         picker = null;
         openDialog(`
           <span class="dialog-eyebrow">CONSULTA AGENDADA</span>
@@ -653,8 +889,19 @@ document.addEventListener("click", (event) => {
         return;
       }
       if (payload && payload.title) {
-        state.schedule.push({ id: "sched-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6), type, day, time, title: payload.title, subtitle: payload.subtitle });
-        saveState();
+        const previousSchedule = state.schedule;
+        state.schedule = [...previousSchedule, {
+          id: "sched-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
+          type,
+          day,
+          time,
+          title: payload.title,
+          subtitle: payload.subtitle,
+        }];
+        if (!saveState()) {
+          state.schedule = previousSchedule;
+          return;
+        }
         showToast(`Adicionado: ${payload.title} · ${day} às ${time}.`);
       }
       picker = null;
@@ -666,17 +913,39 @@ document.addEventListener("click", (event) => {
       scheduleView(); return;
     case "remove-item": {
       const id = actionElement.getAttribute("data-id");
+      const previousSchedule = state.schedule;
       state.schedule = state.schedule.filter(item => item.id !== id);
-      if (saveState()) scheduleView();
+      if (!saveState()) {
+        state.schedule = previousSchedule;
+        return;
+      }
+      scheduleView();
       return;
     }
-    case "clear-schedule":
+    case "clear-schedule": {
+      const previousSchedule = state.schedule;
       state.schedule = [];
-      if (saveState()) scheduleView();
+      if (!saveState()) {
+        state.schedule = previousSchedule;
+        return;
+      }
+      scheduleView();
       return;
+    }
     case "logout":
       state = defaultState();
-      try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (error) {
+        console.error("Não foi possível remover os dados de demonstração.", error);
+        showToast("Não foi possível remover os dados deste navegador.");
+      }
+      document.body.classList.remove("is-consumer-view");
+      document.querySelector("#consumer-area").hidden = true;
+      const brand = document.querySelector(".site-header .brand");
+      brand.href = "#inicio";
+      brand.setAttribute("aria-label", "Mentaltech — início");
+      document.querySelector("#consumer-area").innerHTML = "";
       loginView();
       return;
     case "checkin":

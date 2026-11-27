@@ -28,10 +28,96 @@ const pillars = {
 };
 
 const professionals = [
-  { name: "Dra. Ana Oliveira", focus: "Psicologia clínica · adultos", availability: "Online · acolhimento individual", initials: "AO" },
-  { name: "Dr. Rafael Martins", focus: "Ansiedade e autocuidado", availability: "Online · sessão inicial", initials: "RM" },
-  { name: "Dra. Luiza Santos", focus: "Bem-estar emocional", availability: "Online · agenda demonstrativa", initials: "LS" },
+  {
+    id: "ana-oliveira",
+    name: "Dra. Ana Oliveira",
+    focus: "Psicologia clínica · adultos",
+    availability: "Online · acolhimento individual",
+    initials: "AO",
+    tags: ["ansiedade", "autoestima"],
+    bio: "Acompanha pessoas adultas em momentos de transição, ansiedade e construção de autoestima. Trabalha com escuta ativa e sem julgamentos.",
+    approach: "Terapia cognitivo-comportamental (TCC)",
+    sessionLength: "50 minutos",
+    days: ["Segunda", "Quarta", "Sexta"],
+    times: ["09:00", "14:00", "16:00"],
+  },
+  {
+    id: "rafael-martins",
+    name: "Dr. Rafael Martins",
+    focus: "Ansiedade e autocuidado",
+    availability: "Online · sessão inicial",
+    initials: "RM",
+    tags: ["ansiedade"],
+    bio: "Foca em quadros de ansiedade e rotinas de autocuidado, com pequenos ajustes possíveis no dia a dia.",
+    approach: "Terapia breve e práticas de mindfulness",
+    sessionLength: "45 minutos",
+    days: ["Terça", "Quinta"],
+    times: ["08:00", "11:00", "15:30"],
+  },
+  {
+    id: "luiza-santos",
+    name: "Dra. Luiza Santos",
+    focus: "Bem-estar emocional",
+    availability: "Online · agenda demonstrativa",
+    initials: "LS",
+    tags: ["autoestima", "luto"],
+    bio: "Trabalha temas de autoestima, perdas e fases de recomeço, em um ritmo respeitoso e acolhedor.",
+    approach: "Abordagem humanista e narrativa",
+    sessionLength: "50 minutos",
+    days: ["Segunda", "Quinta", "Sábado"],
+    times: ["10:00", "13:00", "17:00"],
+  },
+  {
+    id: "carla-mendes",
+    name: "Dra. Carla Mendes",
+    focus: "Relacionamentos e família",
+    availability: "Online · casal e individual",
+    initials: "CM",
+    tags: ["relacionamentos"],
+    bio: "Acompanha relações afetivas e familiares, com foco em comunicação não violenta e limites saudáveis.",
+    approach: "Terapia sistêmica e comunicação não violenta",
+    sessionLength: "50 minutos",
+    days: ["Terça", "Sexta"],
+    times: ["09:30", "14:30", "18:00"],
+  },
+  {
+    id: "pedro-almeida",
+    name: "Dr. Pedro Almeida",
+    focus: "Luto e transições",
+    availability: "Online · acolhimento em perdas",
+    initials: "PA",
+    tags: ["luto", "ansiedade"],
+    bio: "Acolhe pessoas em processos de luto, mudanças de ciclo e reorganização de vida.",
+    approach: "Abordagem existencial e narrativa",
+    sessionLength: "50 minutos",
+    days: ["Quarta", "Quinta"],
+    times: ["10:30", "15:00"],
+  },
+  {
+    id: "ines-duarte",
+    name: "Dra. Inês Duarte",
+    focus: "Autoestima e imagem corporal",
+    availability: "Online · sessões individuais",
+    initials: "ID",
+    tags: ["autoestima"],
+    bio: "Trabalha a relação com o próprio corpo e a autoestima, com foco em gentileza e sem metas rígidas.",
+    approach: "TCC com foco em autoimagem",
+    sessionLength: "45 minutos",
+    days: ["Segunda", "Quarta"],
+    times: ["11:00", "16:30"],
+  },
 ];
+
+const professionalTags = [
+  { key: "todos", label: "Todos" },
+  { key: "ansiedade", label: "Ansiedade" },
+  { key: "autoestima", label: "Autoestima" },
+  { key: "relacionamentos", label: "Relacionamentos" },
+  { key: "luto", label: "Luto" },
+];
+
+let professionalFilter = "todos";
+let schedulingState = { professionalId: null, day: null, time: null };
 
 const dailyRecommendations = {
   tranquilo: {
@@ -116,7 +202,7 @@ function openDialog(content, initialFocusSelector) {
 }
 
 function escapeHTML(value) {
-  return value.replace(/[&<>"']/g, (character) => ({
+  return String(value).replace(/[&<>"']/g, (character) => ({
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
@@ -190,21 +276,100 @@ function dashboardView() {
   `);
 }
 
-function professionalsView() {
-  const cards = professionals.map(({ name, focus, availability, initials }) => `
-    <article class="professional-card">
-      <span class="professional-avatar" aria-hidden="true">${initials}</span>
-      <span class="professional-details"><strong>${name}</strong><span>${focus}</span><span>${availability}</span></span>
-      <button class="button button-outline" type="button" data-action="appointment" data-name="${name}">Conhecer</button>
-    </article>
+/* =========================================================
+   TELA DE PSICÓLOGOS — lista com filtros
+   ========================================================= */
+function professionalsView(filter = professionalFilter) {
+  professionalFilter = filter;
+  const visible = filter === "todos"
+    ? professionals
+    : professionals.filter((p) => p.tags.includes(filter));
+
+  const filterChips = professionalTags.map(({ key, label }) => `
+    <button class="pro-filter" type="button" data-action="filter-pros" data-filter="${key}" aria-pressed="${filter === key}">${label}</button>
   `).join("");
+
+  const cards = visible.length
+    ? visible.map(({ id, name, focus, availability, initials }) => `
+      <article class="professional-card">
+        <span class="professional-avatar" aria-hidden="true">${initials}</span>
+        <span class="professional-details"><strong>${name}</strong><span>${focus}</span><span>${availability}</span></span>
+        <button class="button button-outline" type="button" data-action="open-pro" data-pro="${id}">Conhecer</button>
+      </article>
+    `).join("")
+    : `<p class="demo-note">Nenhum perfil demonstrativo para este tema por aqui. Toque em <strong>Todos</strong> para ver a lista completa.</p>`;
+
   openDialog(`
     <span class="dialog-eyebrow">ACOLHIMENTO PROFISSIONAL</span>
     <h2 class="dialog-heading" id="dialog-title">Talvez, uma conversa?</h2>
     <p class="dialog-lead">Conheça perfis demonstrativos. Você merece encontrar alguém com quem se sinta confortável.</p>
     <div class="demo-note">Estes perfis e agendas são fictícios e servem apenas para demonstrar a navegação. Nenhum agendamento real será feito.</div>
+    <div class="pro-filters" role="group" aria-label="Filtrar por tema">${filterChips}</div>
     <div class="professional-list">${cards}</div>
     <div class="form-footer"><button class="button button-outline" type="button" data-action="dashboard">Voltar ao meu espaço</button></div>
+  `);
+}
+
+function professionalDetailView(id) {
+  const pro = professionals.find((p) => p.id === id);
+  if (!pro) return;
+  const tags = pro.tags
+    .map((key) => professionalTags.find((t) => t.key === key)?.label)
+    .filter(Boolean)
+    .join(" · ");
+  openDialog(`
+    <span class="dialog-eyebrow">CONHEÇA MELHOR</span>
+    <h2 class="dialog-heading" id="dialog-title">${pro.name}</h2>
+    <div class="pro-detail-hero">
+      <span class="professional-avatar" aria-hidden="true">${pro.initials}</span>
+      <div>
+        <strong>${pro.focus}</strong>
+        <span>${pro.availability}</span>
+        <span>Temas: ${tags || "—"}</span>
+      </div>
+    </div>
+    <div class="pro-detail-body">
+      <div class="pro-detail-block"><strong>Sobre</strong><p>${pro.bio}</p></div>
+      <div class="pro-detail-block"><strong>Abordagem</strong><p>${pro.approach} · Sessões de ${pro.sessionLength}</p></div>
+    </div>
+    <div class="demo-note">Perfil demonstrativo — nenhuma sessão real será agendada.</div>
+    <div class="form-footer">
+      <button class="button button-primary" type="button" data-action="open-schedule" data-pro="${pro.id}">Escolher horário <span aria-hidden="true">↗</span></button>
+      <button class="button button-outline" type="button" data-action="professionals">Voltar à lista</button>
+    </div>
+  `);
+}
+
+function schedulingView(id) {
+  schedulingState = { professionalId: id, day: null, time: null };
+  renderScheduling();
+}
+
+function renderScheduling() {
+  const pro = professionals.find((p) => p.id === schedulingState.professionalId);
+  if (!pro) return;
+  const dayChips = pro.days.map((d) => `
+    <button class="schedule-chip" type="button" data-action="pick-day" data-day="${d}" aria-pressed="${schedulingState.day === d}">${d}</button>
+  `).join("");
+  const timeChips = pro.times.map((t) => `
+    <button class="schedule-chip" type="button" data-action="pick-time" data-time="${t}" aria-pressed="${schedulingState.time === t}">${t}</button>
+  `).join("");
+  const ready = Boolean(schedulingState.day && schedulingState.time);
+  const summary = ready
+    ? `Você escolheu <strong>${schedulingState.day}</strong> às <strong>${schedulingState.time}</strong> com ${pro.name}.`
+    : "Escolha um dia e um horário para ver o resumo.";
+
+  openDialog(`
+    <span class="dialog-eyebrow">AGENDA DEMONSTRATIVA</span>
+    <h2 class="dialog-heading" id="dialog-title">Quando fica bom para você?</h2>
+    <p class="dialog-lead">Estes são horários fictícios. Nada será reservado de verdade — é só para você sentir o fluxo.</p>
+    <div class="schedule-section"><strong>Dia</strong><div class="schedule-grid" role="group" aria-label="Escolher dia">${dayChips}</div></div>
+    <div class="schedule-section"><strong>Horário</strong><div class="schedule-grid" role="group" aria-label="Escolher horário">${timeChips}</div></div>
+    <p class="schedule-summary" aria-live="polite">${summary}</p>
+    <div class="form-footer">
+      <button class="button button-primary" type="button" data-action="confirm-schedule" ${ready ? "" : "disabled"}>Confirmar demonstração <span aria-hidden="true">♡</span></button>
+      <button class="button button-outline" type="button" data-action="open-pro" data-pro="${pro.id}">Voltar ao perfil</button>
+    </div>
   `);
 }
 
@@ -228,38 +393,101 @@ function setMood(mood) {
   state.lastVisit = new Date().toISOString();
   if (!saveState()) return;
   dashboardView();
+  dialog.querySelector(`[data-mood="${mood}"]`)?.focus();
   showToast("Obrigado por fazer essa pausa. Vamos no seu ritmo.");
 }
 
+/* =========================================================
+   HANDLERS — unificados em um único listener
+   ========================================================= */
 document.addEventListener("click", (event) => {
   const target = event.target instanceof Element ? event.target : null;
-  const actionElement = target?.closest("[data-action]");
-  const pillarElement = target?.closest("[data-pillar]");
+  if (!target) return;
+
+  const moodButton = target.closest("[data-mood]");
+  if (moodButton) {
+    setMood(moodButton.getAttribute("data-mood"));
+    return;
+  }
+
+  const actionElement = target.closest("[data-action]");
+  const pillarElement = target.closest("[data-pillar]");
+
   if (pillarElement && !actionElement) {
     pillarView(pillarElement.getAttribute("data-pillar"));
     return;
   }
   if (!actionElement) return;
+
   const action = actionElement.getAttribute("data-action");
   if (action !== "close-and-emergency") event.preventDefault();
+
   switch (action) {
     case "login":
     case "start":
       loginView();
-      break;
+      return;
     case "close-dialog":
       dialog.close();
-      break;
+      return;
     case "guest":
       if (!state.name) state.name = "amiga";
       if (saveState()) dashboardView();
-      break;
+      return;
     case "dashboard":
       dashboardView();
-      break;
+      return;
     case "professionals":
       professionalsView();
-      break;
+      return;
+    case "filter-pros": {
+      const filter = actionElement.getAttribute("data-filter") || "todos";
+      professionalsView(filter);
+      dialog.querySelector(`[data-action="filter-pros"][data-filter="${filter}"]`)?.focus();
+      return;
+    }
+    case "open-pro":
+      professionalDetailView(actionElement.getAttribute("data-pro"));
+      return;
+    case "open-schedule":
+      schedulingView(actionElement.getAttribute("data-pro"));
+      return;
+    case "pick-day":
+      schedulingState.day = actionElement.getAttribute("data-day");
+      renderScheduling();
+      dialog.querySelector(`[data-action="pick-day"][data-day="${schedulingState.day}"]`)?.focus();
+      return;
+    case "pick-time":
+      schedulingState.time = actionElement.getAttribute("data-time");
+      renderScheduling();
+      dialog.querySelector(`[data-action="pick-time"][data-time="${schedulingState.time}"]`)?.focus();
+      return;
+    case "confirm-schedule": {
+      const pro = professionals.find((p) => p.id === schedulingState.professionalId);
+      if (!pro || !schedulingState.day || !schedulingState.time) return;
+      const { day, time } = schedulingState;
+      const firstName = state.name ? state.name.split(/\s+/)[0] : "amiga";
+      schedulingState = { professionalId: null, day: null, time: null };
+      openDialog(`
+        <span class="dialog-eyebrow">SÓ UMA DEMONSTRAÇÃO</span>
+        <h2 class="dialog-heading" id="dialog-title">Tudo anotado, ${escapeHTML(firstName)}.</h2>
+        <p class="dialog-lead">Em um serviço real, você receberia uma confirmação. Aqui, guardamos só a sensação do primeiro passo.</p>
+        <div class="pro-detail-hero">
+          <span class="professional-avatar" aria-hidden="true">${pro.initials}</span>
+          <div>
+            <strong>${pro.name}</strong>
+            <span>${day} · ${time} · ${pro.sessionLength}</span>
+            <span>${pro.availability}</span>
+          </div>
+        </div>
+        <div class="demo-note">Esta tela é parte do protótipo Mentaltech. Nenhum horário real foi reservado e nenhum dado foi enviado.</div>
+        <div class="form-footer">
+          <button class="button button-primary" type="button" data-action="dashboard">Voltar ao meu espaço <span aria-hidden="true">♡</span></button>
+          <button class="button button-outline" type="button" data-action="professionals">Ver outros perfis</button>
+        </div>
+      `);
+      return;
+    }
     case "logout":
       state = { name: "", mood: "", lastVisit: "" };
       try {
@@ -269,28 +497,19 @@ document.addEventListener("click", (event) => {
         showToast("Não foi possível remover os dados deste navegador.");
       }
       loginView();
-      break;
-    case "appointment":
-      showToast(`${actionElement.getAttribute("data-name")}: agenda apenas demonstrativa; nenhum horário foi reservado.`);
-      break;
+      return;
     case "checkin":
       showToast("Ideia salva para esta demonstração. Obrigado pela pausa.");
       dashboardView();
-      break;
+      return;
     case "close-and-emergency":
       dialog.close();
       siteNav.classList.remove("is-open");
       menuToggle.setAttribute("aria-expanded", "false");
-      break;
+      return;
     default:
-      break;
+      return;
   }
-});
-
-document.addEventListener("click", (event) => {
-  const target = event.target instanceof Element ? event.target : null;
-  const moodButton = target?.closest("[data-mood]");
-  if (moodButton) setMood(moodButton.getAttribute("data-mood"));
 });
 
 dialog.addEventListener("click", (event) => {
@@ -322,7 +541,7 @@ menuToggle.addEventListener("click", () => {
 });
 
 siteNav.addEventListener("click", (event) => {
-  if (event.target instanceof HTMLAnchorElement) {
+  if (event.target instanceof HTMLAnchorElement || event.target instanceof HTMLButtonElement) {
     siteNav.classList.remove("is-open");
     menuToggle.setAttribute("aria-expanded", "false");
     menuToggle.setAttribute("aria-label", "Abrir menu");

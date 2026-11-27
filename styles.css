@@ -39,6 +39,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 .site-nav .nav-emergency { color: var(--olive-dark); font-size: 13px; font-weight: 700; text-decoration: none; }
 .button { display: inline-flex; min-height: 45px; gap: 12px; align-items: center; justify-content: center; border: 1px solid transparent; border-radius: 999px; padding: 0 22px; cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none; transition: transform .18s ease, box-shadow .18s ease; }
 .button:hover { transform: translateY(-2px); }
+.button:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
 .button-primary { color: white; background: var(--olive); box-shadow: 0 8px 18px rgb(83 101 65 / 16%); }
 .button-primary:hover { background: var(--olive-dark); }
 .button-outline { border-color: #b7bda9; color: var(--olive-dark); background: transparent; }
@@ -172,7 +173,7 @@ h1 em, h2 em { color: var(--olive); font-weight: 500; }
 .dashboard-pillar > span:last-child { display: grid; gap: 3px; }
 .dashboard-pillar strong { color: #59614f; font-size: 11px; }
 .dashboard-pillar small { color: #878b80; font-size: 9px; line-height: 1.5; }
-.dashboard-emergency { display: flex; align-items: center; justify-content: space-between; gap: 9px; margin-top: 16px; padding: 13px 15px; border-radius: 9px; color: white; background: var(--olive); text-decoration: none; }
+.dashboard-emergency { display: flex; align-items: center; justify-content: space-between; gap: 9px; margin-top: 16px; padding: 13px 15px; border-radius: 9px; color: white; background: var(--olive-dark); text-decoration: none; }
 .dashboard-emergency span { font-size: 10px; }
 .dashboard-emergency strong { font-size: 13px; }
 .dashboard-exit { margin-top: 14px; }
@@ -256,7 +257,36 @@ h1 em, h2 em { color: var(--olive); font-weight: 500; }
   .dashboard-pillars { gap: 7px; }
   .dashboard-pillar { gap: 7px; padding: 8px; }
   .recommendation-list { grid-template-columns: 1fr; }
+  .schedule-grid { grid-template-columns: repeat(2, 1fr); }
+  .pro-detail-hero { flex-direction: column; align-items: flex-start; text-align: left; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* =========================================================
+   Tela expandida de psicólogos — filtros, perfil e agendamento
+   ========================================================= */
+.pro-filters { display: flex; flex-wrap: wrap; gap: 7px; margin-block: 16px 6px; }
+.pro-filter { min-height: 32px; padding: 0 12px; border: 1px solid #e0d6cb; border-radius: 999px; background: #fffaf7; cursor: pointer; color: #777d71; font-size: 10px; transition: background .15s ease, border-color .15s ease; }
+.pro-filter:hover { border-color: #b7bda9; }
+.pro-filter[aria-pressed="true"] { border-color: var(--olive); background: var(--sage); color: var(--olive-dark); font-weight: 600; }
+
+.pro-detail-hero { display: flex; gap: 14px; align-items: center; margin-block: 18px; padding: 18px; border: 1px solid #e8e2d7; border-radius: 12px; background: #f5f6ef; }
+.pro-detail-hero .professional-avatar { width: 54px; height: 54px; font-size: 20px; }
+.pro-detail-hero > div { display: grid; gap: 4px; }
+.pro-detail-hero strong { color: var(--olive-dark); font-family: var(--serif); font-size: 18px; font-weight: 500; }
+.pro-detail-hero span { color: #85897d; font-size: 10px; line-height: 1.5; }
+.pro-detail-body { display: grid; gap: 10px; }
+.pro-detail-block { padding: 14px; border: 1px solid #e8e2d7; border-radius: 10px; background: white; }
+.pro-detail-block strong { display: block; margin-bottom: 5px; color: var(--olive-dark); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }
+.pro-detail-block p { margin: 0; color: #777d71; font-size: 11px; line-height: 1.7; }
+
+.schedule-section { margin-top: 14px; }
+.schedule-section > strong { display: block; margin-bottom: 8px; color: var(--olive-dark); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.schedule-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.schedule-chip { min-height: 38px; padding: 0 8px; border: 1px solid #e0d6cb; border-radius: 8px; background: white; cursor: pointer; color: #666c5d; font-size: 10px; transition: background .15s ease, border-color .15s ease; }
+.schedule-chip:hover { border-color: #b7bda9; }
+.schedule-chip[aria-pressed="true"] { border-color: var(--olive); background: var(--sage); color: var(--olive-dark); font-weight: 600; }
+.schedule-summary { margin-top: 14px; padding: 12px 14px; border-left: 3px solid var(--mauve); border-radius: 0 8px 8px 0; background: #f2ecf2; color: #74687a; font-size: 11px; line-height: 1.6; }
+.schedule-summary strong { color: var(--olive-dark); }

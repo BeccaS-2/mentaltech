@@ -292,12 +292,13 @@ function dashboardView() {
   const firstName = state.name ? state.name.split(/\s+/)[0] : "bem-vinda";
   const greetingName = firstName.charAt(0).toLocaleUpperCase("pt-BR") + firstName.slice(1);
   const moodOptions = [
-    { key: "tranquilo", label: "Tranquilo" },
-    { key: "mais-ou-menos", label: "Mais ou menos" },
-    { key: "dificil", label: "Difícil" },
+    { key: "tranquilo", emoji: "🌿", label: "Tranquilo" },
+    { key: "mais-ou-menos", emoji: "☁️", label: "Mais ou menos" },
+    { key: "dificil", emoji: "🌧️", label: "Difícil" },
   ];
-  const moodButtons = moodOptions.map(({ key, label }) => `<button class="mood-choice" type="button" data-mood="${key}" aria-pressed="${state.mood === key}">${label}</button>`).join("");
+  const moodButtons = moodOptions.map(({ key, emoji, label }) => `<button class="mood-choice" type="button" data-mood="${key}" aria-pressed="${state.mood === key}"><span aria-hidden="true">${emoji}</span>${label}</button>`).join("");
   const pillarCards = Object.entries(pillars).map(([key, pillar]) => `<button class="dashboard-pillar" type="button" data-pillar="${key}">
+    <span class="dashboard-pillar-icon" aria-hidden="true">${pillar.icon}</span>
     <span><strong>${pillar.title}</strong><small>${key === "terapia" ? "Conheça profissionais" : "Descubra um pequeno passo"}</small></span>
   </button>`).join("");
   const today = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
@@ -345,7 +346,7 @@ function dashboardView() {
   `).join("");
   const selectedHobby = hobbyCategories.find(({ id }) => id === state.existingHobby);
   const hobbies = selectedHobby ? [selectedHobby.label] : ["Leitura", "Jardinagem", "Caminhadas ao ar livre"];
-  const hobbyCards = hobbies.map((hobby) => `<li>${escapeHTML(hobby)}</li>`).join("");
+  const hobbyCards = hobbies.map((hobby) => `<li><span aria-hidden="true">✦</span> ${escapeHTML(hobby)}</li>`).join("");
   const scheduledWorkout = state.schedule.find(({ type }) => type === "workout");
   const movementDate = scheduledWorkout ? dateForWeekday(scheduledWorkout.day) : dateOffset(2);
   const reservationTitle = scheduledWorkout ? scheduledWorkout.title : "Yoga · aula em grupo";
@@ -360,7 +361,7 @@ function dashboardView() {
   }
   const bingoItems = bingoTasks.map(({ id, text }) => {
     const isComplete = state.bingoCompletions.includes(id);
-    return `<li><button class="bingo-cell${isComplete ? " is-complete" : ""}" type="button" data-bingo-item="${id}" aria-pressed="${isComplete}">${text}</button></li>`;
+    return `<li><button class="bingo-cell${isComplete ? " is-complete" : ""}" type="button" data-bingo-item="${id}" aria-pressed="${isComplete}"><span class="bingo-mark" aria-hidden="true">${isComplete ? "✓" : ""}</span><span>${text}</span></button></li>`;
   }).join("");
 
   dialog.close();
@@ -410,6 +411,7 @@ function dashboardView() {
           <div><span class="consumer-card-eyebrow">MOVIMENTO COM GENTILEZA</span><h2 id="movement-title">Sua atividade reservada</h2></div>
         </div>
         <div class="reservation-content">
+          <span class="reservation-icon" aria-hidden="true">↗</span>
           <div><strong>${escapeHTML(reservationTitle)}</strong><span>${escapeHTML(reservationLocation)}</span></div>
           <div class="reservation-when"><strong>${escapeHTML(movementDate.weekday)}, ${escapeHTML(movementDate.full)}</strong><span>${escapeHTML(reservationTime)} · duração de 50 min</span></div>
         </div>
@@ -465,8 +467,8 @@ function dashboardView() {
           <div><span class="consumer-card-eyebrow">SEU PRÓXIMO PASSO</span><h2 id="consumer-pillars-title">Explore seus pilares de cuidado</h2></div>
         </div>
         <div class="dashboard-pillars">${pillarCards}</div>
-        <a class="dashboard-emergency" href="tel:188"><span>Se precisar de apoio emocional agora</span><strong>CVV · 188</strong></a>
-        <button class="dashboard-schedule-cta" type="button" data-action="view-schedule">Ver meu cronograma ${scheduleCount ? `· ${scheduleCount} ${scheduleCount === 1 ? "item" : "itens"}` : ""}</button>
+        <a class="dashboard-emergency" href="tel:188"><span>Se precisar de apoio emocional agora</span><strong>CVV · 188 ↗</strong></a>
+        <button class="dashboard-schedule-cta" type="button" data-action="view-schedule">Ver meu cronograma ${scheduleCount ? `· ${scheduleCount === 1 ? "item" : "itens"}` : ""} <span aria-hidden="true">→</span></button>
       </section>
     </div>
   `;

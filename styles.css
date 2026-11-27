@@ -176,7 +176,7 @@ h1 em, h2 em { color: var(--olive); font-weight: 500; }
 .dashboard-mood { margin-top: 22px; padding: 17px; border-radius: 12px; background: #f0eaf0; }
 .dashboard-mood > strong { display: block; margin-bottom: 12px; color: #5b654e; font-size: 12px; }
 .mood-choices { display: flex; flex-wrap: wrap; gap: 8px; }
-.mood-choice { display: flex; min-height: 36px; align-items: center; padding: 0 10px; border: 1px solid #dcd1dc; border-radius: 999px; background: #fffaf7; cursor: pointer; font-size: 10px; }
+.mood-choice { display: flex; min-height: 36px; align-items: center; gap: 6px; padding: 0 10px; border: 1px solid #dcd1dc; border-radius: 999px; background: #fffaf7; cursor: pointer; font-size: 10px; }
 .mood-choice[aria-pressed="true"] { border-color: var(--olive); background: var(--sage); }
 .daily-recommendations { margin-top: 14px; padding: 16px; border: 1px solid #e0e5d7; border-radius: 12px; background: #f5f6ef; }
 .recommendation-eyebrow { color: var(--olive); font-size: 8px; font-weight: 700; letter-spacing: .14em; }
@@ -188,8 +188,9 @@ h1 em, h2 em { color: var(--olive); font-weight: 500; }
 .recommendation-card span { color: #82867b; font-size: 9px; line-height: 1.5; }
 .dashboard-section-title { margin: 23px 0 10px; color: var(--olive-dark); font-family: var(--serif); font-size: 20px; font-weight: 500; }
 .dashboard-pillars { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
-.dashboard-pillar { display: flex; min-height: 76px; align-items: center; padding: 11px; border: 1px solid #e8e2d7; border-radius: 9px; background: white; text-align: left; cursor: pointer; }
+.dashboard-pillar { display: flex; min-height: 76px; align-items: center; gap: 10px; padding: 11px; border: 1px solid #e8e2d7; border-radius: 9px; background: white; text-align: left; cursor: pointer; }
 .dashboard-pillar:hover { border-color: #aeb69e; }
+.dashboard-pillar-icon { display: grid; width: 33px; height: 33px; flex: 0 0 auto; place-items: center; border-radius: 50%; color: var(--olive-dark); background: var(--sage); font-size: 17px; }
 .dashboard-pillar > span:last-child { display: grid; gap: 3px; }
 .dashboard-pillar strong { color: #59614f; font-size: 11px; }
 .dashboard-pillar small { color: #878b80; font-size: 9px; line-height: 1.5; }
@@ -464,14 +465,16 @@ body.is-consumer-view .menu-toggle { display: none; }
 .consumer-card-intro { margin: 17px 0 12px; color: #7c8275; font-size: 11px; line-height: 1.6; }
 .hobby-list { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; }
 .hobby-list li { display: flex; align-items: center; gap: 9px; color: #626b58; font-size: 11px; }
+.hobby-list li > span { display: grid; width: 25px; height: 25px; place-items: center; border-radius: 50%; color: #927b65; background: #f4eee3; font-size: 11px; }
 .hobby-suggestion { margin-top: 18px; padding: 14px; border-radius: 10px; background: #f2ecf2; }
 .hobby-suggestion p { margin: 7px 0 0; color: #706474; font-size: 10px; line-height: 1.65; }
 .movement-reservation { margin-top: 16px; }
 .reservation-content { display: flex; align-items: center; gap: 13px; margin-top: 18px; padding: 15px; border: 1px solid #e8e2d7; border-radius: 11px; background: white; }
+.reservation-icon { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border-radius: 50%; color: white; background: #78866a; font-size: 20px; }
 .reservation-content > div { display: grid; gap: 5px; }
 .reservation-content > div:first-of-type { flex: 1; }
 .reservation-content strong { color: #59614f; font-size: 11px; }
-.reservation-content span { color: #85897d; font-size: 9px; }
+.reservation-content span:not(.reservation-icon) { color: #85897d; font-size: 9px; }
 .reservation-when { padding-left: 15px; border-left: 1px solid var(--line); }
 .consumer-recommendations, .consumer-pillars { margin-top: 16px; }
 .consumer-recommendations .daily-recommendations { margin-top: 15px; }
@@ -492,9 +495,11 @@ body.is-consumer-view .menu-toggle { display: none; }
 .bingo-progress { display: flex; justify-content: space-between; gap: 8px; margin-top: 18px; color: #85897d; font-size: 9px; }
 .bingo-progress strong { color: var(--olive-dark); }
 .bingo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
-.bingo-cell { width: 100%; min-height: 76px; padding: 10px; border: 1px solid #ebe5d8; border-radius: 9px; color: #777d71; background: white; font: inherit; font-size: 9px; line-height: 1.5; text-align: left; cursor: pointer; }
+.bingo-cell { display: flex; width: 100%; min-height: 76px; align-items: flex-start; gap: 8px; padding: 10px; border: 1px solid #ebe5d8; border-radius: 9px; color: #777d71; background: white; font: inherit; font-size: 9px; line-height: 1.5; text-align: left; cursor: pointer; }
 .bingo-cell.is-complete { border-color: #d7dfca; color: #526047; background: #f1f4eb; }
 .bingo-cell:focus-visible { outline: 2px solid var(--olive); outline-offset: 2px; }
+.bingo-mark { display: grid; width: 18px; height: 18px; flex: 0 0 auto; place-items: center; border: 1px solid #dcd7cb; border-radius: 50%; color: white; background: white; font-size: 10px; }
+.bingo-cell.is-complete .bingo-mark { border-color: var(--olive); background: var(--olive); }
 .consumer-pillars .dashboard-pillars { margin-top: 15px; }
 .consumer-pillars .dashboard-emergency { margin-top: 14px; }
 

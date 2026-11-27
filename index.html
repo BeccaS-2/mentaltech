@@ -4,10 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#687b55">
-    <meta
-      name="description"
-      content="Um espaço acolhedor para cuidar da mente no seu tempo, com terapia, hobbies, movimento e alimentação consciente."
-    >
+    <meta name="description" content="Um espaço acolhedor para cuidar da mente no seu tempo, com terapia, hobbies, movimento e alimentação consciente.">
     <title>Mentaltech — um espaço para você</title>
     <meta property="og:title" content="Mentaltech — um espaço para você">
     <meta property="og:description" content="Um espaço acolhedor para cuidar da mente no seu tempo, com terapia, hobbies, movimento e alimentação consciente.">
@@ -15,10 +12,7 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23687b55'/%3E%3Ctext x='32' y='44' font-family='Georgia, serif' font-style='italic' font-size='36' fill='%23fcf2e2' text-anchor='middle'%3Em%3C/text%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap"
-      rel="stylesheet"
-    >
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script src="app.js" defer></script>
   </head>
@@ -26,7 +20,15 @@
     <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
     <header class="site-header">
       <a class="brand" href="#inicio" aria-label="Mentaltech — início">
-        <span class="brand-mark" aria-hidden="true">m<span>✳</span></span>
+        <svg class="brand-star" viewBox="0 0 100 100" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="starGradHeader" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#8b76b8" />
+              <stop offset="100%" stop-color="#d8b8d6" />
+            </linearGradient>
+          </defs>
+          <path fill="url(#starGradHeader)" d="M50 0 C50 27.6 72.4 50 100 50 C72.4 50 50 72.4 50 100 C50 72.4 27.6 50 0 50 C27.6 50 50 27.6 50 0 Z" />
+        </svg>
         <span>Mentaltech</span>
       </a>
       <nav class="site-nav" aria-label="Navegação principal">
@@ -130,7 +132,18 @@
 
     <footer class="site-footer">
       <div class="section-shell footer-inner">
-        <a class="brand brand-footer" href="#inicio"><span class="brand-mark" aria-hidden="true">m<span>✳</span></span><span>Mentaltech</span></a>
+        <a class="brand brand-footer" href="#inicio">
+          <svg class="brand-star" viewBox="0 0 100 100" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="starGradFooter" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#8b76b8" />
+                <stop offset="100%" stop-color="#d8b8d6" />
+              </linearGradient>
+            </defs>
+            <path fill="url(#starGradFooter)" d="M50 0 C50 27.6 72.4 50 100 50 C72.4 50 50 72.4 50 100 C50 72.4 27.6 50 0 50 C27.6 50 50 27.6 50 0 Z" />
+          </svg>
+          <span>Mentaltech</span>
+        </a>
         <p>Um dia de cada vez, no seu tempo.</p>
         <div class="footer-links"><a href="#sobre">Sobre</a><a href="#emergencia">Rede de apoio</a><a href="https://www.cvv.org.br/" target="_blank" rel="noreferrer">CVV ↗</a></div>
       </div>
